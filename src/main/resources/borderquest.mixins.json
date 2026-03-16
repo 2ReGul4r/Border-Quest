@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "net.borderquest.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "SpawnProtectionMixin",
+    "PlayerDimensionMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
