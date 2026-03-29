@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import net.minecraft.text.Text;
+
 import static net.borderquest.StageDefinition.CategoryReq;
 import static net.borderquest.StageDefinition.ItemReq;
 
@@ -35,6 +37,9 @@ public class BorderQuestConfig {
 
     /** Distance d'avertissement avant le mur (en blocs). */
     public int borderWarningBlocks = 5;
+
+    /** Durée de l'agrandissement de la bordure en ticks (20 ticks = 1 seconde). */
+    public int borderExpansionDurationTicks = 200;
 
     /**
      * Diviseur de la barrière pour le Nether (coordonnées Nether = Overworld / 8).
@@ -100,6 +105,30 @@ public class BorderQuestConfig {
     public String discordAvatarUrl = "";
 
     // -----------------------------------------------------------------------
+    // Texte du tableau de bord / sidebar
+
+    /** Titre affiché en haut du Tab. */
+    public String sidebarHeaderTitle = "★ Border Quest ★";
+
+    /** Texte affiché quand la barrière est entièrement levée. */
+    public String sidebarHeaderCompleteTitle = "LA BARRIERE EST TOMBEE !";
+
+    /** Sous-texte affiché quand la quête est terminée. */
+    public String sidebarHeaderCompleteSubtitle = "Felicitations, vous avez tout accompli !";
+
+    /** Modèle pour la ligne de stade. */
+    public String sidebarHeaderStageTemplate = "Stade %s/%s";
+
+    /** Modèle pour la ligne de rayon. */
+    public String sidebarHeaderRadiusTemplate = "Rayon actuel : %s blocs";
+
+    /** Texte pour la section des ressources à collecter. */
+    public String sidebarHeaderCollectTitle = "Ressources a collecter :";
+
+    /** Texte pour la section Top Donateurs. */
+    public String sidebarFooterTopDonors = "Top Donateurs";
+
+    // -----------------------------------------------------------------------
     // Stades de progression
     // -----------------------------------------------------------------------
 
@@ -134,15 +163,15 @@ public class BorderQuestConfig {
                 instance = GSON.fromJson(json, BorderQuestConfig.class);
                 if (instance == null) instance = new BorderQuestConfig();
                 instance.validate();
-                BorderQuest.LOGGER.info("[BorderQuest] Config chargee ({} stades)", instance.stages.size());
+                BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.configLoaded", instance.stages.size()).getString());
             } catch (IOException e) {
-                BorderQuest.LOGGER.error("[BorderQuest] Impossible de charger la config, valeurs par defaut utilisees", e);
+                BorderQuest.LOGGER.error(Text.translatable("borderquest.logger.configLoadFailed", e.getMessage()).getString());
                 instance = new BorderQuestConfig();
             }
         } else {
             instance = new BorderQuestConfig();
             save();
-            BorderQuest.LOGGER.info("[BorderQuest] Config par defaut creee : {}", path);
+            BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.defaultConfigCreated", instance.stages.size()).getString());
         }
     }
 
@@ -152,7 +181,7 @@ public class BorderQuestConfig {
             Files.createDirectories(path.getParent());
             Files.writeString(path, GSON.toJson(instance));
         } catch (IOException e) {
-            BorderQuest.LOGGER.error("[BorderQuest] Impossible de sauvegarder la config", e);
+            BorderQuest.LOGGER.error(Text.translatable("borderquest.logger.configSaveFailed", e.getMessage()).getString());
         }
     }
 
@@ -162,6 +191,7 @@ public class BorderQuestConfig {
         if (celebrationDurationTicks <= 0) celebrationDurationTicks = 200;
         if (borderDamagePerBlock < 0) borderDamagePerBlock = 0.2;
         if (borderWarningBlocks < 0) borderWarningBlocks = 5;
+        if (borderExpansionDurationTicks <= 0) borderExpansionDurationTicks = 200;
         if (netherScale <= 0) netherScale = 8.0;
         if (altarParticlePeriodTicks <= 0) altarParticlePeriodTicks = 20;
         if (donationAnnounceMinItems <= 0) donationAnnounceMinItems = 1;
@@ -169,6 +199,13 @@ public class BorderQuestConfig {
         if (discordWebhookUrl == null) discordWebhookUrl = "";
         if (discordUsername == null || discordUsername.isBlank()) discordUsername = "Border Quest";
         if (discordAvatarUrl == null) discordAvatarUrl = "";
+        if (sidebarHeaderTitle == null) sidebarHeaderTitle = "★ Border Quest ★";
+        if (sidebarHeaderCompleteTitle == null) sidebarHeaderCompleteTitle = "LA BARRIERE EST TOMBEE !";
+        if (sidebarHeaderCompleteSubtitle == null) sidebarHeaderCompleteSubtitle = "Felicitations, vous avez tout accompli !";
+        if (sidebarHeaderStageTemplate == null) sidebarHeaderStageTemplate = "Stade %s/%s";
+        if (sidebarHeaderRadiusTemplate == null) sidebarHeaderRadiusTemplate = "Rayon actuel : %s blocs";
+        if (sidebarHeaderCollectTitle == null) sidebarHeaderCollectTitle = "Ressources a collecter :";
+        if (sidebarFooterTopDonors == null) sidebarFooterTopDonors = "Top Donateurs";
         for (StageDefinition s : stages) {
             if (s.requirements == null) s.requirements = List.of();
             if (s.categoryRequirements == null) s.categoryRequirements = List.of();

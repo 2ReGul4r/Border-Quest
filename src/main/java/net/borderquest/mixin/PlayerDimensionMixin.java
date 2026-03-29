@@ -34,9 +34,7 @@ public abstract class PlayerDimensionMixin {
             if (lock.worldId.equals(worldId) && currentStage1Based < lock.requiredStage) {
                 ServerPlayerEntity self = (ServerPlayerEntity) (Object) this;
                 self.sendMessage(
-                    Text.literal("[BorderQuest] Ce monde est verrouille jusqu'au stade "
-                        + lock.requiredStage
-                        + " (vous etes au stade " + currentStage1Based + ").")
+                    Text.translatable("borderquest.general.dimensionLock", lock.requiredStage, currentStage1Based)
                         .formatted(Formatting.RED),
                     true
                 );

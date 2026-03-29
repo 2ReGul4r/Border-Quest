@@ -1,6 +1,7 @@
 package net.borderquest.map;
 
 import net.borderquest.BorderQuest;
+import net.minecraft.text.Text;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -37,8 +38,11 @@ public class XaeroMapHook {
     }
 
     public void register() {
-        BorderQuest.LOGGER.info("[BorderQuest] XaeroMapHook actif — {} (réflexion)",
-                useWorldMap ? "World Map" : "Minimap");
+        if (useWorldMap) {
+            BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.register", "Xaero World Map").getString());
+        } else {
+            BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.register", "Xaero Minimap").getString());
+        }
     }
 
     // -----------------------------------------------------------------------
@@ -60,7 +64,7 @@ public class XaeroMapHook {
             // Supprimer un waypoint existant à la même position
             removeFromList(list, pos);
 
-            String label    = (name == null || name.isBlank()) ? "Autel" : name;
+            String label    = (name == null || name.isBlank()) ? Text.translatable("borderquest.general.altar").getString() : name;
             String initials = label.substring(0, Math.min(2, label.length())).toUpperCase();
             Object wp       = buildWaypoint(pos.getX(), pos.getY(), pos.getZ(), label, initials);
             if (wp == null) return;
@@ -69,7 +73,7 @@ public class XaeroMapHook {
             saveWaypoints(wpm, world);
 
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] Xaero addAltarMarker: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Text.translatable("borderquest.logger.functionCall", "XaeroMapHook", "addAltarMarker", e.getMessage()).getString());
         }
     }
 
@@ -91,7 +95,7 @@ public class XaeroMapHook {
             if (removed) saveWaypoints(wpm, world);
 
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] Xaero removeAltarMarker: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Text.translatable("borderquest.logger.functionCall", "XaeroMapHook", "removeAltarMarker", e.getMessage()).getString());
         }
     }
 
@@ -141,7 +145,7 @@ public class XaeroMapHook {
         } catch (ClassNotFoundException e) {
             return null;
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] Xaero getWaypointManager: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Text.translatable("borderquest.logger.functionCall", "XaeroMapHook", "getWaypointManager", e.getMessage()).getString());
             return null;
         }
     }
@@ -266,7 +270,7 @@ public class XaeroMapHook {
         } catch (ClassNotFoundException e) {
             return null;
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] Xaero buildWaypoint: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Text.translatable("borderquest.logger.functionCall", "XaeroMapHook", "buildWaypoint", e.getMessage()).getString());
             return null;
         }
     }
@@ -308,7 +312,7 @@ public class XaeroMapHook {
             // Fallback : save() sans argument
             try { wpm.getClass().getMethod("save").invoke(wpm); } catch (NoSuchMethodException ignored) {}
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] Xaero saveWaypoints: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Text.translatable("borderquest.logger.functionCall", "XaeroMapHook", "saveWaypoints", e.getMessage()).getString());
         }
     }
 

@@ -6,6 +6,8 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
 
+import net.minecraft.text.Text;
+
 /**
  * Envoie des notifications asynchrones vers un webhook Discord lors des changements de stade.
  * Toutes les requêtes HTTP sont effectuées sur un thread séparé pour ne pas bloquer le serveur.
@@ -30,11 +32,11 @@ public class DiscordWebhook {
             try {
                 HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
                 if (response.statusCode() >= 400) {
-                    BorderQuest.LOGGER.warn("[BorderQuest] Discord webhook erreur {} : {}",
-                        response.statusCode(), response.body());
+                    BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.discordWebhookError",
+                        response.statusCode(), response.body()).getString());
                 }
             } catch (Exception e) {
-                BorderQuest.LOGGER.warn("[BorderQuest] Discord webhook echec : {}", e.getMessage());
+                BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.discordWebhookFailed", e.getMessage()).getString());
             }
         });
     }

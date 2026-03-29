@@ -12,6 +12,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Formatting;
 import net.minecraft.world.Heightmap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,16 +37,16 @@ public class BorderQuest implements ModInitializer {
             manager.applyBorder();
             manager.initSidebar();
             manager.updateSidebar();
-            LOGGER.info("[BorderQuest] Mod charge — stade {}/{}",
+            LOGGER.info(Text.translatable("borderquest.logger.loaded",
                 manager.getState().currentStage + 1,
-                BorderQuestManager.STAGES().size() - 1);
+                BorderQuestManager.STAGES().size() - 1).getString());
         });
 
         // Arrêt
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             if (manager != null) {
                 manager.save();
-                LOGGER.info("[BorderQuest] Etat sauvegarde.");
+                LOGGER.info(Text.translatable("borderquest.logger.saveStatus").getString());
             }
         });
 
@@ -64,8 +65,19 @@ public class BorderQuest implements ModInitializer {
             // Téléporter vers une position sûre si le joueur est sous-terre ou dans l'eau
             safeSpawnTeleport(player, world, manager);
 
-            player.sendMessage(
-                Text.literal("\u00a7a[Border Quest] \u00a77Tapez \u00a7f/bq status \u00a77pour voir l'objectif."));
+            Text prefix = Text.translatable("borderquest.prefix")
+                .formatted(Formatting.GREEN);
+
+            Text message = Text.translatable(
+                "borderquest.general.statusHint",
+                Text.literal("/bq status").formatted(Formatting.WHITE)
+            ).formatted(Formatting.GRAY);
+
+            player.sendMessage(Text.empty()
+                .append(prefix)
+                .append(Text.literal(" "))
+                .append(message)
+            , false);
 
             // Décaler au tick suivant : Minecraft envoie ses paquets d'init (dont un
             // PlayerListHeaderS2CPacket vide) après l'événement JOIN, ce qui écraserait notre header.
@@ -88,7 +100,7 @@ public class BorderQuest implements ModInitializer {
             return ActionResult.SUCCESS;
         });
 
-        LOGGER.info("[BorderQuest] Initialise !");
+        LOGGER.info(Text.translatable("borderquest.logger.init").getString());
     }
 
     /**
@@ -118,8 +130,7 @@ public class BorderQuest implements ModInitializer {
         if (py < topY - 2) {
             player.teleport(world, px, topY + 0.5, pz,
                 java.util.Set.of(), player.getYaw(), player.getPitch(), false);
-            LOGGER.info("[BorderQuest] Joueur {} teleporte a la surface ({}, {}, {})",
-                player.getName().getString(), (int) px, topY, (int) pz);
+            LOGGER.info(Text.translatable("borderquest.logger.safeSpawnTeleport", player.getName().getString(), (int) px, topY, (int) pz).getString());
         }
     }
 }

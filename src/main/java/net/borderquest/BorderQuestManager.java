@@ -104,14 +104,14 @@ public class BorderQuestManager {
                 if (state.altarPositions == null) state.altarPositions = new java.util.ArrayList<>();
                 if (state.altarNames == null)     state.altarNames     = new java.util.HashMap<>();
                 state.currentStage = Math.max(0, Math.min(state.currentStage, STAGES().size() - 1));
-                BorderQuest.LOGGER.info("[BorderQuest] Etat charge : stade {}", state.currentStage + 1);
+                BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.loadStatus", state.currentStage + 1).getString());
             } catch (IOException e) {
-                BorderQuest.LOGGER.error("[BorderQuest] Impossible de charger l'etat", e);
+                BorderQuest.LOGGER.error(Text.translatable("borderquest.logger.loadReportFailed", e.getMessage()).getString());
                 state = new QuestState();
             }
         } else {
             state = new QuestState();
-            BorderQuest.LOGGER.info("[BorderQuest] Nouvel etat cree (stade 1)");
+            BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.questStateCreated").getString());
         }
     }
 
@@ -120,7 +120,7 @@ public class BorderQuestManager {
             Files.createDirectories(savePath.getParent());
             Files.writeString(savePath, GSON.toJson(state));
         } catch (IOException e) {
-            BorderQuest.LOGGER.error("[BorderQuest] Impossible de sauvegarder l'etat", e);
+            BorderQuest.LOGGER.error(Text.translatable("borderquest.logger.saveReportFailed", e.getMessage()).getString());
         }
     }
 
@@ -156,9 +156,10 @@ public class BorderQuestManager {
             BlockPos pos = sp.getPos();
             borderCenterX = pos.getX() + 0.5;
             borderCenterZ = pos.getZ() + 0.5;
-            BorderQuest.LOGGER.info("[BorderQuest] Centre barriere -> ({}, {})", (int) borderCenterX, (int) borderCenterZ);
+            BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.centerBarrier",
+                (int) borderCenterX, (int) borderCenterZ).getString());
         } catch (Exception e) {
-            BorderQuest.LOGGER.warn("[BorderQuest] Impossible de lire le spawn, centre = (0, 0)");
+            BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.centerBarrierFailed").getString());
             borderCenterX = 0.5;
             borderCenterZ = 0.5;
         }
@@ -194,19 +195,21 @@ public class BorderQuestManager {
 
         resolveRequirements();
         if (mapManager != null) mapManager.updateBorder(borderCenterX, borderCenterZ, stage.borderRadius);
-        BorderQuest.LOGGER.info("[BorderQuest] Barriere appliquee : rayon={} centre=({},{})",
-            (int) stage.borderRadius, (int) borderCenterX, (int) borderCenterZ);
+        BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.borderApplied",
+            (int) stage.borderRadius, (int) borderCenterX, (int) borderCenterZ).getString());
     }
 
     private void animateBorderExpansion(double newDiameter) {
+        BorderQuestConfig cfg = BorderQuestConfig.get();
+        long durationMs = cfg.borderExpansionDurationTicks * 50L;
         long now = System.currentTimeMillis();
-        double scale = BorderQuestConfig.get().netherScale;
+        double scale = cfg.netherScale;
         server.getOverworld().getWorldBorder()
-            .interpolateSize(server.getOverworld().getWorldBorder().getSize(), newDiameter, 10000L, now);
+            .interpolateSize(server.getOverworld().getWorldBorder().getSize(), newDiameter, durationMs, now);
         var nether = server.getWorld(World.NETHER);
         if (nether != null) {
             nether.getWorldBorder()
-                .interpolateSize(nether.getWorldBorder().getSize(), newDiameter / scale, 10000L, now);
+                .interpolateSize(nether.getWorldBorder().getSize(), newDiameter / scale, durationMs, now);
         }
     }
 
@@ -484,7 +487,7 @@ public class BorderQuestManager {
                         }
                     }
                 } catch (Exception e) {
-                    BorderQuest.LOGGER.warn("[BorderQuest] Erreur distribution recompense: {}", e.getMessage());
+                    BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.rewardDistributionError", e.getMessage()).getString());
                 }
             }
             player.sendMessage(Text.literal("\u00a76[BorderQuest] \u00a7aRecompenses du stade distribues !"), false);

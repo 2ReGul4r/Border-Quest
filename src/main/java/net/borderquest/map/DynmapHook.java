@@ -1,6 +1,7 @@
 package net.borderquest.map;
 
 import net.borderquest.BorderQuest;
+import net.minecraft.text.Text;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -25,7 +26,7 @@ public class DynmapHook {
     }
 
     public void register() {
-        BorderQuest.LOGGER.info("[BorderQuest] DynmapHook actif (réflexion)");
+        BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.register", "Dynmap").getString());
     }
 
     public void updateBorder(double centerX, double centerZ, double radius) {
@@ -53,7 +54,7 @@ public class DynmapHook {
                     new Class[]{double.class, int.class}, 0.1, 0x00CC28);
             }
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] Dynmap updateBorder: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Text.translatable("borderquest.logger.functionCall", "Dynmap", "updateBorder", e.getMessage()).getString());
         }
     }
 
@@ -81,7 +82,7 @@ public class DynmapHook {
                 (double)(pos.getX()) + 0.5, (double) pos.getY(), (double)(pos.getZ()) + 0.5,
                 icon, false);
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] Dynmap addAltarMarker: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Text.translatable("borderquest.logger.functionCall", "Dynmap", "addAltarMarker", e.getMessage()).getString());
         }
     }
 
@@ -94,7 +95,7 @@ public class DynmapHook {
             Object m = invoke1(ms, "findMarker", String.class, markerId(pos));
             if (m != null) invoke0(m, "deleteMarker");
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] Dynmap removeAltarMarker: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Text.translatable("borderquest.logger.functionCall", "Dynmap", "removeAltarMarker", e.getMessage()).getString());
         }
     }
 
@@ -113,7 +114,7 @@ public class DynmapHook {
         } catch (ClassNotFoundException e) {
             return null;
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] Dynmap getMarkerAPI: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Text.translatable("borderquest.logger.functionCall", "Dynmap", "getMarkerAPI", e.getMessage()).getString());
             return null;
         }
     }
