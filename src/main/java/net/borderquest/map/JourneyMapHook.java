@@ -1,6 +1,7 @@
 package net.borderquest.map;
 
 import net.borderquest.BorderQuest;
+import net.borderquest.Localization;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -28,7 +29,7 @@ public class JourneyMapHook {
     }
 
     public void register() {
-        BorderQuest.LOGGER.info("[BorderQuest] JourneyMapHook actif (réflexion)");
+        BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.register", "JourneyMap"));
     }
 
     // -----------------------------------------------------------------------
@@ -38,7 +39,7 @@ public class JourneyMapHook {
             Object store = getWaypointStore();
             if (store == null) return;
 
-            String label = (name == null || name.isBlank()) ? "Autel BorderQuest" : name;
+            String label = (name == null || name.isBlank()) ? Localization.translate("borderquest.general.altar") : name;
 
             // Supprimer un éventuel waypoint existant à cette position
             removeByPos(store, pos);
@@ -51,7 +52,8 @@ public class JourneyMapHook {
                     ? wp.getClass().getInterfaces()[0] : wp.getClass(), wp);
 
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] JourneyMap addAltarMarker: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Localization.translate("borderquest.logger.functionCall",
+                    "JourneyMap", "addAltarMarker", e.getMessage()));
         }
     }
 
@@ -61,7 +63,8 @@ public class JourneyMapHook {
             if (store == null) return;
             removeByPos(store, pos);
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] JourneyMap removeAltarMarker: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Localization.translate("borderquest.logger.functionCall",
+                    "JourneyMap", "removeAltarMarker", e.getMessage()));
         }
     }
 
@@ -86,7 +89,8 @@ public class JourneyMapHook {
         } catch (ClassNotFoundException e) {
             return null;
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] JourneyMap getWaypointStore: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Localization.translate("borderquest.logger.functionCall",
+                    "JourneyMap", "getWaypointStore", e.getMessage()));
             return null;
         }
     }
@@ -129,7 +133,8 @@ public class JourneyMapHook {
         } catch (ClassNotFoundException e) {
             return null;
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] JourneyMap buildWaypoint: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Localization.translate("borderquest.logger.functionCall",
+                    "JourneyMap", "buildWaypoint", e.getMessage()));
             return null;
         }
     }
@@ -163,7 +168,8 @@ public class JourneyMapHook {
                 } catch (Exception ignored) {}
             }
         } catch (Exception e) {
-            BorderQuest.LOGGER.debug("[BorderQuest] JourneyMap removeByPos: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Localization.translate("borderquest.logger.functionCall",
+                    "JourneyMap", "removeByPos", e.getMessage()));
         }
     }
 
@@ -191,3 +197,4 @@ public class JourneyMapHook {
         }
     }
 }
+

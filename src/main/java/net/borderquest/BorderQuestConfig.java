@@ -38,11 +38,16 @@ public class BorderQuestConfig {
     /** Distance d'avertissement avant le mur (en blocs). */
     public int borderWarningBlocks = 5;
 
+    /** Durée de l'agrandissement de la bordure en ticks (20 ticks = 1 seconde). */
+    public int borderExpansionDurationTicks = 200;
+
     /**
      * Diviseur de la barrière pour le Nether (coordonnées Nether = Overworld / 8).
      * Changez cette valeur si votre monde Nether utilise une échelle différente.
      */
     public double netherScale = 8.0;
+
+    public String locale = "en_us";
 
     // -----------------------------------------------------------------------
     // Particules autels
@@ -102,6 +107,46 @@ public class BorderQuestConfig {
     public String discordAvatarUrl = "";
 
     // -----------------------------------------------------------------------
+    // Texte du tableau de bord / sidebar
+
+    /** Titre affiché en haut du Tab. */
+    public String sidebarHeaderTitle = "★ Border Quest ★";
+
+    /** Texte affiché quand la barrière est entièrement levée. */
+    public String sidebarHeaderCompleteTitle = "LA BARRIERE EST TOMBEE !";
+
+    /** Sous-texte affiché quand la quête est terminée. */
+    public String sidebarHeaderCompleteSubtitle = "Felicitations, vous avez tout accompli !";
+
+    /** Modèle pour la ligne de stade. */
+    public String sidebarHeaderStageTemplate = "Stade %s/%s";
+
+    /** Modèle pour la ligne de rayon. */
+    public String sidebarHeaderRadiusTemplate = "Rayon actuel : %s blocs";
+
+    /** Texte pour la section des ressources à collecter. */
+    public String sidebarHeaderCollectTitle = "Ressources a collecter :";
+
+    /** Texte pour la section Top Donateurs. */
+    public String sidebarFooterTopDonors = "Top Donateurs";
+
+    // -----------------------------------------------------------------------
+    // Texte des célébrations
+    // -----------------------------------------------------------------------
+
+    /** Titre affiché lors de la célébration finale. */
+    public String celebrationTitleFinal = "★ LIBERTE ! ★";
+
+    /** Titre affiché lors de l'agrandissement de la zone. */
+    public String celebrationTitleProgress = "✦ ZONE AGRANDIE ✦";
+
+    /** Sous-titre affiché lors de la célébration finale. */
+    public String celebrationSubtitleFinal = "Le monde vous appartient !";
+
+    /** Sous-titre affiché lors de l'agrandissement de la zone. Utilise %s pour radius et titre. */
+    public String celebrationSubtitleProgress = "Rayon : %s blocs | %s";
+
+    // -----------------------------------------------------------------------
     // Stades de progression
     // -----------------------------------------------------------------------
 
@@ -136,15 +181,18 @@ public class BorderQuestConfig {
                 instance = GSON.fromJson(json, BorderQuestConfig.class);
                 if (instance == null) instance = new BorderQuestConfig();
                 instance.validate();
-                BorderQuest.LOGGER.info("[BorderQuest] Config chargee ({} stades)", instance.stages.size());
+                BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.configLoaded", instance.stages.size()));
+                Localization.init(instance.locale);
             } catch (IOException e) {
-                BorderQuest.LOGGER.error("[BorderQuest] Impossible de charger la config, valeurs par defaut utilisees", e);
+                BorderQuest.LOGGER.error(Localization.translate("borderquest.logger.configLoadFailed", e.getMessage()));
                 instance = new BorderQuestConfig();
+                Localization.init(instance.locale);
             }
         } else {
             instance = new BorderQuestConfig();
             save();
-            BorderQuest.LOGGER.info("[BorderQuest] Config par defaut creee : {}", path);
+            Localization.init(instance.locale);
+            BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.defaultConfigCreated", instance.stages.size()));
         }
     }
 
@@ -154,7 +202,7 @@ public class BorderQuestConfig {
             Files.createDirectories(path.getParent());
             Files.writeString(path, GSON.toJson(instance));
         } catch (IOException e) {
-            BorderQuest.LOGGER.error("[BorderQuest] Impossible de sauvegarder la config", e);
+            BorderQuest.LOGGER.error(Localization.translate("borderquest.logger.configSaveFailed", e.getMessage()));
         }
     }
 
@@ -164,13 +212,26 @@ public class BorderQuestConfig {
         if (celebrationDurationTicks <= 0) celebrationDurationTicks = 200;
         if (borderDamagePerBlock < 0) borderDamagePerBlock = 0.2;
         if (borderWarningBlocks < 0) borderWarningBlocks = 5;
+        if (borderExpansionDurationTicks <= 0) borderExpansionDurationTicks = 200;
         if (netherScale <= 0) netherScale = 8.0;
         if (altarParticlePeriodTicks <= 0) altarParticlePeriodTicks = 20;
         if (donationAnnounceMinItems <= 0) donationAnnounceMinItems = 1;
+        if (locale == null || locale.isBlank()) locale = "en_us";
         if (worldLocks == null) worldLocks = defaultWorldLocks();
         if (discordWebhookUrl == null) discordWebhookUrl = "";
         if (discordUsername == null || discordUsername.isBlank()) discordUsername = "Border Quest";
         if (discordAvatarUrl == null) discordAvatarUrl = "";
+        if (sidebarHeaderTitle == null) sidebarHeaderTitle = "★ Border Quest ★";
+        if (sidebarHeaderCompleteTitle == null) sidebarHeaderCompleteTitle = "LA BARRIERE EST TOMBEE !";
+        if (sidebarHeaderCompleteSubtitle == null) sidebarHeaderCompleteSubtitle = "Felicitations, vous avez tout accompli !";
+        if (sidebarHeaderStageTemplate == null) sidebarHeaderStageTemplate = "Stade %s/%s";
+        if (sidebarHeaderRadiusTemplate == null) sidebarHeaderRadiusTemplate = "Rayon actuel : %s blocs";
+        if (sidebarHeaderCollectTitle == null) sidebarHeaderCollectTitle = "Ressources a collecter :";
+        if (sidebarFooterTopDonors == null) sidebarFooterTopDonors = "Top Donateurs";
+        if (celebrationTitleFinal == null) celebrationTitleFinal = "★ LIBERTE ! ★";
+        if (celebrationTitleProgress == null) celebrationTitleProgress = "✦ ZONE AGRANDIE ✦";
+        if (celebrationSubtitleFinal == null) celebrationSubtitleFinal = "Le monde vous appartient !";
+        if (celebrationSubtitleProgress == null) celebrationSubtitleProgress = "Rayon : %s blocs | %s";
         for (StageDefinition s : stages) {
             if (s.requirements == null) s.requirements = List.of();
             if (s.categoryRequirements == null) s.categoryRequirements = List.of();
@@ -239,3 +300,4 @@ public class BorderQuestConfig {
         );
     }
 }
+

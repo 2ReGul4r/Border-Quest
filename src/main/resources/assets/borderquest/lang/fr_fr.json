@@ -25,7 +25,6 @@
   "borderquest.logger.discordWebhookFailed": "[BorderQuest] Discord webhook echec : %s",
   "borderquest.logger.rewardDistributionError": "[BorderQuest] Erreur distribution recompense: %s",
 
-
   "borderquest.prefix": "[BorderQuest]",
 
   "borderquest.general.borderQuest": "Border Quest",
@@ -47,15 +46,5 @@
   "borderquest.msg.topDonors": "=== Classement des donateurs ===",
   "borderquest.msg.altarRemoved": "[BorderQuest] Autel retiré (restants: %d)",
   "borderquest.msg.notAnAltar": "[BorderQuest] Ce bloc n'est pas un autel.",
-  "borderquest.msg.noManager": "[BorderQuest] Le mod n'est pas encore initialisé.",
-  "borderquest.msg.useSubmitXp": "[BorderQuest] Cet objectif requiert de l'XP. Utilisez /bq submitxp <montant>.",
-  "borderquest.msg.noResourceRequirements": "[BorderQuest] Aucune ressource requise pour ce stade.",
-  "borderquest.msg.noResourcesToSubmit": "[BorderQuest] Vous n'avez aucune ressource requise.",
-  "borderquest.msg.barrierAlreadyRaised": "[BorderQuest] La barrière est déjà entièrement levée.",
-  "borderquest.msg.noXpRequired": "[BorderQuest] Aucune XP n'est requise pour ce stade.",
-  "borderquest.msg.invalidXpAmount": "[BorderQuest] Entrez une quantité d'XP valide (> 0).",
-  "borderquest.msg.notEnoughXp": "[BorderQuest] Vous n'avez pas assez d'XP pour donner.",
-  "borderquest.msg.xpObjectiveAlreadyMet": "[BorderQuest] L'objectif XP est déjà atteint.",
-  "borderquest.msg.stageCompletedWithXp": "[BorderQuest] Objectif atteint ! +%d XP donnés, barrière agrandie !",
-  "borderquest.msg.xpSubmitted": "[BorderQuest] +%d XP soumis (%d/%d)."
+  "borderquest.msg.noManager": "[BorderQuest] Le mod n'est pas encore initialisé."
 }

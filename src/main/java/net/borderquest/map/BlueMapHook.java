@@ -8,6 +8,7 @@ import de.bluecolored.bluemap.api.markers.ShapeMarker;
 import de.bluecolored.bluemap.api.math.Color;
 import de.bluecolored.bluemap.api.math.Shape;
 import net.borderquest.BorderQuest;
+import net.borderquest.Localization;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -45,6 +46,7 @@ public class BlueMapHook {
         BlueMapAPI.onDisable(api -> {
             this.blueMapAPI = null;
         });
+        BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.register", "BlueMap"));
     }
 
     // -----------------------------------------------------------------------
@@ -63,7 +65,7 @@ public class BlueMapHook {
                 centerX + radius, centerZ + radius
             );
             ShapeMarker marker = ShapeMarker.builder()
-                .label("Frontiere Border Quest")
+                .label(Localization.translate("borderquest.general.border"))
                 .shape(rect, 64f)
                 .lineColor(new Color(0, 200, 40, 0.8f))
                 .fillColor(new Color(0, 200, 40, 0.1f))
@@ -83,7 +85,7 @@ public class BlueMapHook {
 
         forEachOverworldMap(api, markerSet -> {
             POIMarker marker = POIMarker.builder()
-                .label(name.isBlank() ? "Autel" : name)
+                .label(name.isBlank() ? Localization.translate("borderquest.general.altar") : name)
                 .position(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5)
                 .build();
             markerSet.put("altar_" + key, marker);
@@ -116,7 +118,7 @@ public class BlueMapHook {
                     cachedCX + cachedRadius, cachedCZ + cachedRadius
                 );
                 ShapeMarker borderMarker = ShapeMarker.builder()
-                    .label("Frontiere Border Quest")
+                    .label(Localization.translate("borderquest.general.border"))
                     .shape(rect, 64f)
                     .lineColor(new Color(0, 200, 40, 0.8f))
                     .fillColor(new Color(0, 200, 40, 0.1f))
@@ -127,9 +129,9 @@ public class BlueMapHook {
             // Recréer autels
             for (Map.Entry<String, double[]> e : altarCache.entrySet()) {
                 double[] xyz  = e.getValue();
-                String   name = altarNames.getOrDefault(e.getKey(), "Autel");
+                String   name = altarNames.getOrDefault(e.getKey(), Localization.translate("borderquest.general.altar"));
                 POIMarker poi = POIMarker.builder()
-                    .label(name.isBlank() ? "Autel" : name)
+                    .label(name.isBlank() ? Localization.translate("borderquest.general.altar") : name)
                     .position(xyz[0], xyz[1], xyz[2])
                     .build();
                 markerSet.put("altar_" + e.getKey(), poi);
@@ -146,13 +148,14 @@ public class BlueMapHook {
                 for (BlueMapMap map : maps) {
                     MarkerSet ms = map.getMarkerSets().computeIfAbsent(
                         MARKER_SET_ID,
-                        id -> MarkerSet.builder().label("Border Quest").build()
+                        id -> MarkerSet.builder().label(Localization.translate("borderquest.general.borderQuest")).build()
                     );
                     action.accept(ms);
                 }
             });
         } catch (Exception e) {
-            BorderQuest.LOGGER.warn("[BorderQuest] BlueMap marker error: {}", e.getMessage());
+            BorderQuest.LOGGER.debug(Localization.translate("borderquest.logger.functionCall", "BlueMap", "forEachOverworldMap", e.getMessage()));
         }
     }
 }
+

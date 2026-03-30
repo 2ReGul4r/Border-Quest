@@ -46,15 +46,5 @@
   "borderquest.msg.topDonors": "=== Donor ranking ===",
   "borderquest.msg.altarRemoved": "[BorderQuest] Altar removed (remaining: %d)",
   "borderquest.msg.notAnAltar": "[BorderQuest] This block is not an altar.",
-  "borderquest.msg.noManager": "[BorderQuest] The mod is not initialized yet.",
-  "borderquest.msg.useSubmitXp": "[BorderQuest] This stage requires XP. Use /bq submitxp <amount>.",
-  "borderquest.msg.noResourceRequirements": "[BorderQuest] No resources are required for this stage.",
-  "borderquest.msg.noResourcesToSubmit": "[BorderQuest] You don't have any required resources to submit.",
-  "borderquest.msg.barrierAlreadyRaised": "[BorderQuest] The barrier is already fully raised.",
-  "borderquest.msg.noXpRequired": "[BorderQuest] No XP is required for this stage.",
-  "borderquest.msg.invalidXpAmount": "[BorderQuest] Enter a valid XP amount (> 0).",
-  "borderquest.msg.notEnoughXp": "[BorderQuest] You don't have enough XP to donate.",
-  "borderquest.msg.xpObjectiveAlreadyMet": "[BorderQuest] The XP objective is already met.",
-  "borderquest.msg.stageCompletedWithXp": "[BorderQuest] Objective complete! +%d XP donated and the barrier expands!",
-  "borderquest.msg.xpSubmitted": "[BorderQuest] +%d XP submitted (%d/%d)."
+  "borderquest.msg.noManager": "[BorderQuest] The mod is not initialized yet."
 }

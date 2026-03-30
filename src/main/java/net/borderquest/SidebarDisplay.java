@@ -56,14 +56,15 @@ public class SidebarDisplay {
     // -----------------------------------------------------------------------
 
     private Text buildHeader(BorderQuestManager manager) {
+        BorderQuestConfig cfg = BorderQuestConfig.get();
         MutableText t = Text.empty();
         QuestState state = manager.getState();
 
-        t.append(Text.literal("\u2605 Border Quest \u2605\n").formatted(Formatting.GOLD, Formatting.BOLD));
+        t.append(Text.literal(cfg.sidebarHeaderTitle + "\n").formatted(Formatting.GOLD, Formatting.BOLD));
 
         if (manager.isLastStage()) {
-            t.append(Text.literal("LA BARRIERE EST TOMBEE !\n").formatted(Formatting.GREEN, Formatting.BOLD));
-            t.append(Text.literal("Felicitations, vous avez tout accompli !").formatted(Formatting.YELLOW));
+            t.append(Text.literal(cfg.sidebarHeaderCompleteTitle + "\n").formatted(Formatting.GREEN, Formatting.BOLD));
+            t.append(Text.literal(cfg.sidebarHeaderCompleteSubtitle).formatted(Formatting.YELLOW));
             return t;
         }
 
@@ -71,13 +72,12 @@ public class SidebarDisplay {
         int totalStages = BorderQuestManager.STAGES().size() - 1;
         StageDefinition stage = manager.getCurrentStage();
 
-        t.append(Text.literal("Stade " + stageNum + "/" + totalStages).formatted(Formatting.AQUA, Formatting.BOLD));
+        t.append(Text.literal(String.format(cfg.sidebarHeaderStageTemplate, stageNum, totalStages)).formatted(Formatting.AQUA, Formatting.BOLD));
         t.append(Text.literal(" \u2014 ").formatted(Formatting.DARK_GRAY));
         t.append(Text.literal(stage.title + "\n").formatted(Formatting.WHITE));
-        t.append(Text.literal("Rayon actuel : ").formatted(Formatting.GRAY));
-        t.append(Text.literal((int) stage.borderRadius + " blocs\n").formatted(Formatting.WHITE));
-        t.append(Text.literal("\n"));
-        t.append(Text.literal("Ressources a collecter :\n").formatted(Formatting.YELLOW));
+        t.append(Text.literal(String.format(cfg.sidebarHeaderRadiusTemplate, (int) stage.borderRadius)).formatted(Formatting.GRAY));
+        t.append(Text.literal("\n\n").formatted(Formatting.WHITE));
+        t.append(Text.literal(cfg.sidebarHeaderCollectTitle + "\n").formatted(Formatting.YELLOW));
 
         for (StageDefinition.ItemReq req : manager.getResolvedRequirements()) {
             int submitted = Math.min(state.submittedItems.getOrDefault(req.itemId(), 0), req.count());
@@ -104,7 +104,7 @@ public class SidebarDisplay {
 
         MutableText t = Text.empty();
         t.append(Text.literal("\n"));
-        t.append(Text.literal("Top Donateurs\n").formatted(Formatting.GOLD, Formatting.BOLD));
+        t.append(Text.literal(BorderQuestConfig.get().sidebarFooterTopDonors + "\n").formatted(Formatting.GOLD, Formatting.BOLD));
 
         List<Map.Entry<String, Integer>> top = state.playerDonations.entrySet().stream()
             .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())

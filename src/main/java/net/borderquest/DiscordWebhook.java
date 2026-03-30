@@ -30,11 +30,11 @@ public class DiscordWebhook {
             try {
                 HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
                 if (response.statusCode() >= 400) {
-                    BorderQuest.LOGGER.warn("[BorderQuest] Discord webhook erreur {} : {}",
-                        response.statusCode(), response.body());
+                    BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.discordWebhookError",
+                        response.statusCode(), response.body()));
                 }
             } catch (Exception e) {
-                BorderQuest.LOGGER.warn("[BorderQuest] Discord webhook echec : {}", e.getMessage());
+                BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.discordWebhookFailed", e.getMessage()));
             }
         });
     }
@@ -63,3 +63,4 @@ public class DiscordWebhook {
                 .replace("\t", "\\t");
     }
 }
+
