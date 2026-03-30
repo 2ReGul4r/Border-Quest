@@ -1,4 +1,4 @@
-package net.borderquest;
+﻿package net.borderquest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-
-import net.minecraft.text.Text;
 
 import static net.borderquest.StageDefinition.CategoryReq;
 import static net.borderquest.StageDefinition.ItemReq;
@@ -46,6 +44,8 @@ public class BorderQuestConfig {
      * Changez cette valeur si votre monde Nether utilise une échelle différente.
      */
     public double netherScale = 8.0;
+
+    public String locale = "en_us";
 
     // -----------------------------------------------------------------------
     // Particules autels
@@ -129,6 +129,22 @@ public class BorderQuestConfig {
     public String sidebarFooterTopDonors = "Top Donateurs";
 
     // -----------------------------------------------------------------------
+    // Texte des célébrations
+    // -----------------------------------------------------------------------
+
+    /** Titre affiché lors de la célébration finale. */
+    public String celebrationTitleFinal = "★ LIBERTE ! ★";
+
+    /** Titre affiché lors de l'agrandissement de la zone. */
+    public String celebrationTitleProgress = "✦ ZONE AGRANDIE ✦";
+
+    /** Sous-titre affiché lors de la célébration finale. */
+    public String celebrationSubtitleFinal = "Le monde vous appartient !";
+
+    /** Sous-titre affiché lors de l'agrandissement de la zone. Utilise %s pour radius et titre. */
+    public String celebrationSubtitleProgress = "Rayon : %s blocs | %s";
+
+    // -----------------------------------------------------------------------
     // Stades de progression
     // -----------------------------------------------------------------------
 
@@ -163,15 +179,18 @@ public class BorderQuestConfig {
                 instance = GSON.fromJson(json, BorderQuestConfig.class);
                 if (instance == null) instance = new BorderQuestConfig();
                 instance.validate();
-                BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.configLoaded", instance.stages.size()).getString());
+                BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.configLoaded", instance.stages.size()));
+                Localization.init(instance.locale);
             } catch (IOException e) {
-                BorderQuest.LOGGER.error(Text.translatable("borderquest.logger.configLoadFailed", e.getMessage()).getString());
+                BorderQuest.LOGGER.error(Localization.translate("borderquest.logger.configLoadFailed", e.getMessage()));
                 instance = new BorderQuestConfig();
+                Localization.init(instance.locale);
             }
         } else {
             instance = new BorderQuestConfig();
             save();
-            BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.defaultConfigCreated", instance.stages.size()).getString());
+            Localization.init(instance.locale);
+            BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.defaultConfigCreated", instance.stages.size()));
         }
     }
 
@@ -181,7 +200,7 @@ public class BorderQuestConfig {
             Files.createDirectories(path.getParent());
             Files.writeString(path, GSON.toJson(instance));
         } catch (IOException e) {
-            BorderQuest.LOGGER.error(Text.translatable("borderquest.logger.configSaveFailed", e.getMessage()).getString());
+            BorderQuest.LOGGER.error(Localization.translate("borderquest.logger.configSaveFailed", e.getMessage()));
         }
     }
 
@@ -195,6 +214,7 @@ public class BorderQuestConfig {
         if (netherScale <= 0) netherScale = 8.0;
         if (altarParticlePeriodTicks <= 0) altarParticlePeriodTicks = 20;
         if (donationAnnounceMinItems <= 0) donationAnnounceMinItems = 1;
+        if (locale == null || locale.isBlank()) locale = "en_us";
         if (worldLocks == null) worldLocks = defaultWorldLocks();
         if (discordWebhookUrl == null) discordWebhookUrl = "";
         if (discordUsername == null || discordUsername.isBlank()) discordUsername = "Border Quest";
@@ -206,6 +226,10 @@ public class BorderQuestConfig {
         if (sidebarHeaderRadiusTemplate == null) sidebarHeaderRadiusTemplate = "Rayon actuel : %s blocs";
         if (sidebarHeaderCollectTitle == null) sidebarHeaderCollectTitle = "Ressources a collecter :";
         if (sidebarFooterTopDonors == null) sidebarFooterTopDonors = "Top Donateurs";
+        if (celebrationTitleFinal == null) celebrationTitleFinal = "★ LIBERTE ! ★";
+        if (celebrationTitleProgress == null) celebrationTitleProgress = "✦ ZONE AGRANDIE ✦";
+        if (celebrationSubtitleFinal == null) celebrationSubtitleFinal = "Le monde vous appartient !";
+        if (celebrationSubtitleProgress == null) celebrationSubtitleProgress = "Rayon : %s blocs | %s";
         for (StageDefinition s : stages) {
             if (s.requirements == null) s.requirements = List.of();
             if (s.categoryRequirements == null) s.categoryRequirements = List.of();
@@ -272,3 +296,4 @@ public class BorderQuestConfig {
         );
     }
 }
+

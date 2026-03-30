@@ -1,8 +1,9 @@
-package net.borderquest.mixin;
+﻿package net.borderquest.mixin;
 
 import net.borderquest.BorderQuest;
 import net.borderquest.BorderQuestConfig;
 import net.borderquest.BorderQuestManager;
+import net.borderquest.Localization;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -34,7 +35,7 @@ public abstract class PlayerDimensionMixin {
             if (lock.worldId.equals(worldId) && currentStage1Based < lock.requiredStage) {
                 ServerPlayerEntity self = (ServerPlayerEntity) (Object) this;
                 self.sendMessage(
-                    Text.translatable("borderquest.general.dimensionLock", lock.requiredStage, currentStage1Based)
+                    Text.literal(Localization.translate("borderquest.general.dimensionLock", lock.requiredStage, currentStage1Based))
                         .formatted(Formatting.RED),
                     true
                 );
@@ -44,3 +45,4 @@ public abstract class PlayerDimensionMixin {
         }
     }
 }
+

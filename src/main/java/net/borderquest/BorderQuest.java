@@ -1,4 +1,4 @@
-package net.borderquest;
+﻿package net.borderquest;
 
 import net.borderquest.map.MapIntegrationManager;
 import net.fabricmc.api.ModInitializer;
@@ -37,16 +37,16 @@ public class BorderQuest implements ModInitializer {
             manager.applyBorder();
             manager.initSidebar();
             manager.updateSidebar();
-            LOGGER.info(Text.translatable("borderquest.logger.loaded",
+            LOGGER.info(Localization.translate("borderquest.logger.loaded",
                 manager.getState().currentStage + 1,
-                BorderQuestManager.STAGES().size() - 1).getString());
+                BorderQuestManager.STAGES().size() - 1));
         });
 
         // Arrêt
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             if (manager != null) {
                 manager.save();
-                LOGGER.info(Text.translatable("borderquest.logger.saveStatus").getString());
+                LOGGER.info(Localization.translate("borderquest.logger.saveStatus"));
             }
         });
 
@@ -65,13 +65,13 @@ public class BorderQuest implements ModInitializer {
             // Téléporter vers une position sûre si le joueur est sous-terre ou dans l'eau
             safeSpawnTeleport(player, world, manager);
 
-            Text prefix = Text.translatable("borderquest.prefix")
+            Text prefix = Text.literal(Localization.translate("borderquest.prefix"))
                 .formatted(Formatting.GREEN);
 
-            Text message = Text.translatable(
+            Text message = Text.literal(Localization.translate(
                 "borderquest.general.statusHint",
-                Text.literal("/bq status").formatted(Formatting.WHITE)
-            ).formatted(Formatting.GRAY);
+                "/bq status"
+            )).formatted(Formatting.GRAY);
 
             player.sendMessage(Text.empty()
                 .append(prefix)
@@ -100,7 +100,7 @@ public class BorderQuest implements ModInitializer {
             return ActionResult.SUCCESS;
         });
 
-        LOGGER.info(Text.translatable("borderquest.logger.init").getString());
+        LOGGER.info(Localization.translate("borderquest.logger.init"));
     }
 
     /**
@@ -130,7 +130,8 @@ public class BorderQuest implements ModInitializer {
         if (py < topY - 2) {
             player.teleport(world, px, topY + 0.5, pz,
                 java.util.Set.of(), player.getYaw(), player.getPitch(), false);
-            LOGGER.info(Text.translatable("borderquest.logger.safeSpawnTeleport", player.getName().getString(), (int) px, topY, (int) pz).getString());
+            LOGGER.info(Localization.translate("borderquest.logger.safeSpawnTeleport", player.getName().getString(), (int) px, topY, (int) pz));
         }
     }
 }
+

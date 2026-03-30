@@ -1,12 +1,10 @@
-package net.borderquest;
+﻿package net.borderquest;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.concurrent.CompletableFuture;
-
-import net.minecraft.text.Text;
 
 /**
  * Envoie des notifications asynchrones vers un webhook Discord lors des changements de stade.
@@ -32,11 +30,11 @@ public class DiscordWebhook {
             try {
                 HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
                 if (response.statusCode() >= 400) {
-                    BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.discordWebhookError",
-                        response.statusCode(), response.body()).getString());
+                    BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.discordWebhookError",
+                        response.statusCode(), response.body()));
                 }
             } catch (Exception e) {
-                BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.discordWebhookFailed", e.getMessage()).getString());
+                BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.discordWebhookFailed", e.getMessage()));
             }
         });
     }
@@ -65,3 +63,4 @@ public class DiscordWebhook {
                 .replace("\t", "\\t");
     }
 }
+

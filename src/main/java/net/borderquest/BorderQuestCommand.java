@@ -1,4 +1,4 @@
-package net.borderquest;
+﻿package net.borderquest;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -88,7 +88,7 @@ public class BorderQuestCommand {
         var player = ctx.getSource().getPlayer();
         if (player == null) {
             ctx.getSource().sendMessage(
-                Text.translatable("borderquest.msg.mustExecAsPlayer").formatted(Formatting.RED));
+                Text.literal(Localization.translate("borderquest.msg.mustExecAsPlayer")).formatted(Formatting.RED));
             return 0;
         }
 
@@ -106,7 +106,7 @@ public class BorderQuestCommand {
         mgr.updateSidebar();
 
         ctx.getSource().getServer().getPlayerManager().broadcast(
-            Text.translatable("borderquest.msg.reset").formatted(Formatting.YELLOW),
+            Text.literal(Localization.translate("borderquest.msg.reset")).formatted(Formatting.YELLOW),
             false
         );
         return 1;
@@ -118,7 +118,7 @@ public class BorderQuestCommand {
 
         if (mgr.isLastStage()) {
             ctx.getSource().sendMessage(
-                Text.translatable("borderquest.msg.lastStage").formatted(Formatting.YELLOW));
+                Text.literal(Localization.translate("borderquest.msg.lastStage")).formatted(Formatting.YELLOW));
             return 0;
         }
 
@@ -137,7 +137,7 @@ public class BorderQuestCommand {
         mgr.updateSidebar();
 
         ctx.getSource().getServer().getPlayerManager().broadcast(
-            Text.translatable("borderquest.msg.nextStage", state.currentStage + 1)
+            Text.literal(Localization.translate("borderquest.msg.nextStage", state.currentStage + 1))
                 .formatted(Formatting.YELLOW),
             false
         );
@@ -152,7 +152,7 @@ public class BorderQuestCommand {
         mgr.load();
         mgr.applyBorder();
         mgr.updateSidebar();
-        ctx.getSource().sendMessage(Text.translatable("borderquest.msg.reload").formatted(Formatting.GREEN));
+        ctx.getSource().sendMessage(Text.literal(Localization.translate("borderquest.msg.reload")).formatted(Formatting.GREEN));
         return 1;
     }
 
@@ -166,28 +166,28 @@ public class BorderQuestCommand {
 
         ServerPlayerEntity player = ctx.getSource().getPlayer();
         if (player == null) {
-            ctx.getSource().sendMessage(Text.translatable("borderquest.msg.mustExecAsPlayer").formatted(Formatting.RED));
+            ctx.getSource().sendMessage(Text.literal(Localization.translate("borderquest.msg.mustExecAsPlayer")).formatted(Formatting.RED));
             return 0;
         }
 
         BlockPos pos = getLookedBlock(player);
         if (pos == null) {
-            ctx.getSource().sendMessage(Text.translatable("borderquest.msg.lookAtBlock").formatted(Formatting.RED));
+            ctx.getSource().sendMessage(Text.literal(Localization.translate("borderquest.msg.lookAtBlock")).formatted(Formatting.RED));
             return 0;
         }
 
         if (mgr.addAltar(pos, name)) {
             String label = name.isBlank() ? "" : " \"" + name + "\"";
-            ctx.getSource().sendMessage(Text.translatable(
-                "borderquest.msg.altarAdded", label, pos.getX(), pos.getY(), pos.getZ(), mgr.getAltarCount())
+            ctx.getSource().sendMessage(Text.literal(Localization.translate(
+                "borderquest.msg.altarAdded", label, pos.getX(), pos.getY(), pos.getZ(), mgr.getAltarCount()))
                 .formatted(Formatting.GREEN));
         } else {
             // Autel déjà existant → mettre à jour le nom si fourni
             if (!name.isBlank()) {
                 mgr.setAltarName(pos, name);
-                ctx.getSource().sendMessage(Text.translatable("borderquest.msg.altarNameUpdated", name).formatted(Formatting.GREEN));
+                ctx.getSource().sendMessage(Text.literal(Localization.translate("borderquest.msg.altarNameUpdated", name)).formatted(Formatting.GREEN));
             } else {
-                ctx.getSource().sendMessage(Text.translatable("borderquest.msg.altarAlreadyExists").formatted(Formatting.YELLOW));
+                ctx.getSource().sendMessage(Text.literal(Localization.translate("borderquest.msg.altarAlreadyExists")).formatted(Formatting.YELLOW));
             }
         }
         return 1;
@@ -199,12 +199,12 @@ public class BorderQuestCommand {
 
         List<Map.Entry<String, Integer>> top = mgr.getTopDonors(10);
         if (top.isEmpty()) {
-            ctx.getSource().sendMessage(Text.translatable("borderquest.msg.noDonations").formatted(Formatting.YELLOW));
+            ctx.getSource().sendMessage(Text.literal(Localization.translate("borderquest.msg.noDonations")).formatted(Formatting.YELLOW));
             return 0;
         }
 
         MutableText t = Text.empty();
-        t.append(Text.translatable("borderquest.msg.topDonors").formatted(Formatting.GOLD, Formatting.BOLD));
+        t.append(Text.literal(Localization.translate("borderquest.msg.topDonors")).formatted(Formatting.GOLD, Formatting.BOLD));
         t.append(Text.literal("\n"));
         for (int i = 0; i < top.size(); i++) {
             String name = mgr.getState().playerNames.getOrDefault(top.get(i).getKey(), "???");
@@ -221,21 +221,21 @@ public class BorderQuestCommand {
 
         ServerPlayerEntity player = ctx.getSource().getPlayer();
         if (player == null) {
-            ctx.getSource().sendMessage(Text.translatable("borderquest.msg.mustExecAsPlayer").formatted(Formatting.RED));
+            ctx.getSource().sendMessage(Text.literal(Localization.translate("borderquest.msg.mustExecAsPlayer")).formatted(Formatting.RED));
             return 0;
         }
 
         BlockPos pos = getLookedBlock(player);
         if (pos == null) {
-            ctx.getSource().sendMessage(Text.translatable("borderquest.msg.lookAtBlock").formatted(Formatting.RED));
+            ctx.getSource().sendMessage(Text.literal(Localization.translate("borderquest.msg.lookAtBlock")).formatted(Formatting.RED));
             return 0;
         }
 
         if (mgr.removeAltar(pos)) {
-            ctx.getSource().sendMessage(Text.translatable(
-                "borderquest.msg.altarRemoved", mgr.getAltarCount()).formatted(Formatting.GREEN));
+            ctx.getSource().sendMessage(Text.literal(Localization.translate(
+                "borderquest.msg.altarRemoved", mgr.getAltarCount())).formatted(Formatting.GREEN));
         } else {
-            ctx.getSource().sendMessage(Text.translatable("borderquest.msg.notAnAltar").formatted(Formatting.YELLOW));
+            ctx.getSource().sendMessage(Text.literal(Localization.translate("borderquest.msg.notAnAltar")).formatted(Formatting.YELLOW));
         }
         return 1;
     }
@@ -250,6 +250,7 @@ public class BorderQuestCommand {
     // -----------------------------------------------------------------------
 
     private static Text noManager() {
-        return Text.translatable("borderquest.msg.noManager").formatted(Formatting.RED);
+        return Text.literal(Localization.translate("borderquest.msg.noManager")).formatted(Formatting.RED);
     }
 }
+

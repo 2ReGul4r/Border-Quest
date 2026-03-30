@@ -1,9 +1,8 @@
-package net.borderquest;
+﻿package net.borderquest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import net.borderquest.map.MapIntegrationManager;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FireworkExplosionComponent;
@@ -104,14 +103,14 @@ public class BorderQuestManager {
                 if (state.altarPositions == null) state.altarPositions = new java.util.ArrayList<>();
                 if (state.altarNames == null)     state.altarNames     = new java.util.HashMap<>();
                 state.currentStage = Math.max(0, Math.min(state.currentStage, STAGES().size() - 1));
-                BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.loadStatus", state.currentStage + 1).getString());
+                BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.loadStatus", state.currentStage + 1));
             } catch (IOException e) {
-                BorderQuest.LOGGER.error(Text.translatable("borderquest.logger.loadReportFailed", e.getMessage()).getString());
+                BorderQuest.LOGGER.error(Localization.translate("borderquest.logger.loadReportFailed", e.getMessage()));
                 state = new QuestState();
             }
         } else {
             state = new QuestState();
-            BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.questStateCreated").getString());
+            BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.questStateCreated"));
         }
     }
 
@@ -120,7 +119,7 @@ public class BorderQuestManager {
             Files.createDirectories(savePath.getParent());
             Files.writeString(savePath, GSON.toJson(state));
         } catch (IOException e) {
-            BorderQuest.LOGGER.error(Text.translatable("borderquest.logger.saveReportFailed", e.getMessage()).getString());
+            BorderQuest.LOGGER.error(Localization.translate("borderquest.logger.saveReportFailed", e.getMessage()));
         }
     }
 
@@ -156,10 +155,10 @@ public class BorderQuestManager {
             BlockPos pos = sp.getPos();
             borderCenterX = pos.getX() + 0.5;
             borderCenterZ = pos.getZ() + 0.5;
-            BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.centerBarrier",
-                (int) borderCenterX, (int) borderCenterZ).getString());
+            BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.centerBarrier",
+                (int) borderCenterX, (int) borderCenterZ));
         } catch (Exception e) {
-            BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.centerBarrierFailed").getString());
+            BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.centerBarrierFailed"));
             borderCenterX = 0.5;
             borderCenterZ = 0.5;
         }
@@ -195,8 +194,8 @@ public class BorderQuestManager {
 
         resolveRequirements();
         if (mapManager != null) mapManager.updateBorder(borderCenterX, borderCenterZ, stage.borderRadius);
-        BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.borderApplied",
-            (int) stage.borderRadius, (int) borderCenterX, (int) borderCenterZ).getString());
+        BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.borderApplied",
+            (int) stage.borderRadius, (int) borderCenterX, (int) borderCenterZ));
     }
 
     private void animateBorderExpansion(double newDiameter) {
@@ -314,13 +313,14 @@ public class BorderQuestManager {
 
     private void celebrateStageComplete(boolean isFinal, StageDefinition newStage) {
         // Titre plein écran
+        BorderQuestConfig cfg = BorderQuestConfig.get();
         Text title    = isFinal
-            ? Text.literal("★ LIBERTE ! ★").formatted(Formatting.GOLD, Formatting.BOLD)
-            : Text.literal("✦ ZONE AGRANDIE ✦").formatted(Formatting.AQUA, Formatting.BOLD);
+            ? Text.literal(cfg.celebrationTitleFinal).formatted(Formatting.GOLD, Formatting.BOLD)
+            : Text.literal(cfg.celebrationTitleProgress).formatted(Formatting.AQUA, Formatting.BOLD);
         Text subtitle = isFinal
-            ? Text.literal("Le monde vous appartient !").formatted(Formatting.YELLOW)
-            : Text.literal("Rayon : " + (int) newStage.borderRadius + " blocs | " + newStage.title)
-                  .formatted(Formatting.WHITE);
+            ? Text.literal(cfg.celebrationSubtitleFinal).formatted(Formatting.YELLOW)
+            : Text.literal(String.format(cfg.celebrationSubtitleProgress,
+                (int) newStage.borderRadius, newStage.title)).formatted(Formatting.WHITE);
 
         server.getPlayerManager().sendToAll(new TitleFadeS2CPacket(10, 80, 20));
         server.getPlayerManager().sendToAll(new SubtitleS2CPacket(subtitle));
@@ -487,7 +487,7 @@ public class BorderQuestManager {
                         }
                     }
                 } catch (Exception e) {
-                    BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.rewardDistributionError", e.getMessage()).getString());
+                    BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.rewardDistributionError", e.getMessage()));
                 }
             }
             player.sendMessage(Text.literal("\u00a76[BorderQuest] \u00a7aRecompenses du stade distribues !"), false);
@@ -672,3 +672,4 @@ public class BorderQuestManager {
         }
     }
 }
+

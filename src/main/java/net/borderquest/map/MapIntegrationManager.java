@@ -1,8 +1,8 @@
-package net.borderquest.map;
+﻿package net.borderquest.map;
 
 import net.borderquest.BorderQuest;
+import net.borderquest.Localization;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.text.Text;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -26,9 +26,9 @@ public class MapIntegrationManager {
             try {
                 blueMapHook = new BlueMapHook(server);
                 blueMapHook.register();
-                BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.integration", "BlueMap").getString());
+                BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.integration", "BlueMap"));
             } catch (Exception e) {
-                BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.integrationFailed", "BlueMap", e.getMessage()).getString());
+                BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.integrationFailed", "BlueMap", e.getMessage()));
                 blueMapHook = null;
             }
         }
@@ -38,9 +38,9 @@ public class MapIntegrationManager {
             try {
                 dynmapHook = new DynmapHook(server);
                 dynmapHook.register();
-                BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.integration", "Dynmap").getString());
+                BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.integration", "Dynmap"));
             } catch (Exception e) {
-                BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.integrationFailed", "Dynmap", e.getMessage()).getString());
+                BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.integrationFailed", "Dynmap", e.getMessage()));
                 dynmapHook = null;
             }
         }
@@ -49,9 +49,9 @@ public class MapIntegrationManager {
             try {
                 journeyMapHook = new JourneyMapHook(server);
                 journeyMapHook.register();
-                BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.integration", "JourneyMap").getString());
+                BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.integration", "JourneyMap"));
             } catch (Exception e) {
-                BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.integrationFailed", "JourneyMap", e.getMessage()).getString());
+                BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.integrationFailed", "JourneyMap", e.getMessage()));
                 journeyMapHook = null;
             }
         }
@@ -60,9 +60,9 @@ public class MapIntegrationManager {
             try {
                 xaeroMinimapHook = new XaeroMapHook(server, false);
                 xaeroMinimapHook.register();
-                BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.integration", "Xaero Minimap").getString());
+                BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.integration", "Xaero Minimap"));
             } catch (Exception e) {
-                BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.integrationFailed", "Xaero Minimap", e.getMessage()).getString());
+                BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.integrationFailed", "Xaero Minimap", e.getMessage()));
                 xaeroMinimapHook = null;
             }
         }
@@ -71,9 +71,9 @@ public class MapIntegrationManager {
             try {
                 xaeroWorldMapHook = new XaeroMapHook(server, true);
                 xaeroWorldMapHook.register();
-                BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.integration", "Xaero World Map").getString());
+                BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.integration", "Xaero World Map"));
             } catch (Exception e) {
-                BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.integrationFailed", "Xaero World Map", e.getMessage()).getString());
+                BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.integrationFailed", "Xaero World Map", e.getMessage()));
                 xaeroWorldMapHook = null;
             }
         }
@@ -104,7 +104,8 @@ public class MapIntegrationManager {
     private void safely(Runnable action, String context) {
         try { action.run(); }
         catch (Exception e) {
-            BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.unexpectedIntegrationError", context, e.getMessage()).getString());
+            BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.unexpectedIntegrationError", context, e.getMessage()));
         }
     }
 }
+

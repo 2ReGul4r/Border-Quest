@@ -1,6 +1,5 @@
-package net.borderquest;
+﻿package net.borderquest;
 
-import net.minecraft.text.Text;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
@@ -94,7 +93,7 @@ public class BiomeResourceResolver {
                                                            Set<RegistryKey<Biome>> presentBiomes) {
         List<BiomeMapping> mappings = CATEGORY_MAPPINGS.get(category);
         if (mappings == null) {
-            BorderQuest.LOGGER.warn(Text.translatable("borderquest.logger.unknownCategory", category).getString());
+            BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.unknownCategory", category));
             return new StageDefinition.ItemReq("minecraft:cobblestone", count);
         }
 
@@ -109,7 +108,7 @@ public class BiomeResourceResolver {
 
         // Fallback
         String fallback = CATEGORY_FALLBACKS.getOrDefault(category, "minecraft:cobblestone");
-        BorderQuest.LOGGER.info(Text.translatable("borderquest.logger.noBiomeMatch", category, fallback).getString());
+        BorderQuest.LOGGER.info(Localization.translate("borderquest.logger.noBiomeMatch", category, fallback));
         return new StageDefinition.ItemReq(fallback, count);
     }
 
@@ -126,3 +125,4 @@ public class BiomeResourceResolver {
         }
     }
 }
+
