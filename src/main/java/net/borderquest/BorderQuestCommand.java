@@ -109,7 +109,7 @@ public class BorderQuestCommand {
         var player = ctx.getSource().getPlayer();
         if (player == null) {
             ctx.getSource().sendMessage(
-                Text.translatable("borderquest.msg.mustExecAsPlayer").formatted(Formatting.RED));
+                Text.literal(Localization.translate("borderquest.msg.mustExecAsPlayer")).formatted(Formatting.RED));
             return 0;
         }
 

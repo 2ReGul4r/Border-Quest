@@ -369,13 +369,13 @@ public class BorderQuestManager {
 
     public Text submitItems(ServerPlayerEntity player) {
         if (isLastStage())
-            return Text.literal("La barriere est deja entierement levee !").formatted(Formatting.GOLD);
+            return Text.literal(Localization.translate("borderquest.msg.barrierAlreadyRaised")).formatted(Formatting.GOLD);
 
         if (resolvedRequirements.isEmpty()) {
             if (resolvedXpRequirements != null && !resolvedXpRequirements.isEmpty()) {
-                return Text.translatable("borderquest.msg.useSubmitXp").formatted(Formatting.YELLOW);
+                return Text.literal(Localization.translate("borderquest.msg.useSubmitXp")).formatted(Formatting.YELLOW);
             }
-            return Text.translatable("borderquest.msg.noResourceRequirements").formatted(Formatting.YELLOW);
+            return Text.literal(Localization.translate("borderquest.msg.noResourceRequirements")).formatted(Formatting.YELLOW);
         }
 
         boolean submittedAnything = false;
@@ -401,7 +401,7 @@ public class BorderQuestManager {
         }
 
         if (!submittedAnything)
-            return Text.translatable("borderquest.msg.noResourcesToSubmit").formatted(Formatting.RED);
+            return Text.literal(Localization.translate("borderquest.msg.noResourcesToSubmit")).formatted(Formatting.RED);
 
         state.playerDonations.merge(playerUuid, totalDonated, Integer::sum);
         state.playerNames.put(playerUuid, playerName);
@@ -410,8 +410,7 @@ public class BorderQuestManager {
         BorderQuestConfig cfgAnnounce = BorderQuestConfig.get();
         if (cfgAnnounce.donationAnnouncementsEnabled && totalDonated >= cfgAnnounce.donationAnnounceMinItems) {
             server.getPlayerManager().broadcast(
-                Text.literal("\u00a7b[BorderQuest] \u00a7f" + playerName
-                    + " \u00a77a soumis \u00a7f" + totalDonated + " \u00a77objet(s) !"),
+                Text.literal(Localization.translate("borderquest.msg.publicDonation", playerName, totalDonated)),
                 false
             );
         }
@@ -421,30 +420,31 @@ public class BorderQuestManager {
 
         if (isStageComplete()) {
             advanceStage();
-            return Text.literal("Objectif atteint ! La barriere s'agrandit !\n" + log.toString().trim())
-                .formatted(Formatting.GREEN);
+            return Text.literal(Localization.translate("borderquest.msg.stageCompleted") + "\n"
+                + log.toString().trim()).formatted(Formatting.GREEN);
         }
-        return Text.literal("Ressources soumises :\n" + log.toString().trim()).formatted(Formatting.GREEN);
+        return Text.literal(Localization.translate("borderquest.msg.resourcesSubmitted") + "\n"
+            + log.toString().trim()).formatted(Formatting.GREEN);
     }
 
     public Text submitXp(ServerPlayerEntity player, int amount) {
         if (isLastStage())
-            return Text.translatable("borderquest.msg.barrierAlreadyRaised").formatted(Formatting.GOLD);
+            return Text.literal(Localization.translate("borderquest.msg.barrierAlreadyRaised")).formatted(Formatting.GOLD);
 
         int totalXpRequired = resolvedXpRequirements.stream().mapToInt(StageDefinition.XpReq::count).sum();
         if (totalXpRequired <= 0)
-            return Text.translatable("borderquest.msg.noXpRequired").formatted(Formatting.YELLOW);
+            return Text.literal(Localization.translate("borderquest.msg.noXpRequired")).formatted(Formatting.YELLOW);
 
         if (amount <= 0)
-            return Text.translatable("borderquest.msg.invalidXpAmount").formatted(Formatting.RED);
+            return Text.literal(Localization.translate("borderquest.msg.invalidXpAmount")).formatted(Formatting.RED);
 
         int currentXp = player.totalExperience;
         if (currentXp <= 0)
-            return Text.translatable("borderquest.msg.notEnoughXp").formatted(Formatting.RED);
+            return Text.literal(Localization.translate("borderquest.msg.notEnoughXp")).formatted(Formatting.RED);
 
         int remaining = totalXpRequired - state.submittedXp;
         if (remaining <= 0)
-            return Text.translatable("borderquest.msg.xpObjectiveAlreadyMet").formatted(Formatting.GREEN);
+            return Text.literal(Localization.translate("borderquest.msg.xpObjectiveAlreadyMet")).formatted(Formatting.GREEN);
 
         int toDonate = Math.min(amount, Math.min(remaining, currentXp));
         player.addExperience(-toDonate);
@@ -455,9 +455,9 @@ public class BorderQuestManager {
 
         if (isStageComplete()) {
             advanceStage();
-            return Text.translatable("borderquest.msg.stageCompletedWithXp", toDonate).formatted(Formatting.GREEN);
+            return Text.literal(Localization.translate("borderquest.msg.stageCompletedWithXp", toDonate)).formatted(Formatting.GREEN);
         }
-        return Text.translatable("borderquest.msg.xpSubmitted", toDonate, state.submittedXp, totalXpRequired).formatted(Formatting.GREEN);
+        return Text.literal(Localization.translate("borderquest.msg.xpSubmitted", toDonate, state.submittedXp, totalXpRequired)).formatted(Formatting.GREEN);
     }
 
     private void advanceStage() {
@@ -485,10 +485,9 @@ public class BorderQuestManager {
 
         // Annonce chat
         Text announcement = isFinal
-            ? Text.literal("=== LIBERTE ! La barriere est tombee ! ===").formatted(Formatting.GOLD)
-            : Text.literal("=== Stade " + state.currentStage + " valide ! Rayon -> " +
-                (int) newStage.borderRadius + " blocs | " + newStage.title + " ===")
-              .formatted(Formatting.AQUA);
+            ? Text.literal(Localization.translate("borderquest.msg.stageCompleteFinalAnnouncement")).formatted(Formatting.GOLD)
+            : Text.literal(Localization.translate("borderquest.msg.stageValidatedAnnouncement",
+                state.currentStage, (int) newStage.borderRadius, newStage.title)).formatted(Formatting.AQUA);
         server.getPlayerManager().broadcast(announcement, false);
 
         // Récompenses pour tous les joueurs connectés
@@ -498,9 +497,9 @@ public class BorderQuestManager {
 
         // Notification Discord
         String discordMsg = isFinal
-            ? "LIBERTÉ ! La barrière est tombée !"
-            : "Stade " + state.currentStage + " validé — rayon " + (int) newStage.borderRadius
-                + " blocs (" + newStage.title + ")";
+            ? Localization.translate("borderquest.msg.discordStageCompleteFinal")
+            : Localization.translate("borderquest.msg.discordStageValidated",
+                state.currentStage, (int) newStage.borderRadius, newStage.title);
         DiscordWebhook.sendAsync(discordMsg);
 
         // Célébration (titre + son + feux d'artifice)
@@ -538,7 +537,7 @@ public class BorderQuestManager {
                     BorderQuest.LOGGER.warn(Localization.translate("borderquest.logger.rewardDistributionError", e.getMessage()));
                 }
             }
-            player.sendMessage(Text.literal("\u00a76[BorderQuest] \u00a7aRecompenses du stade distribues !"), false);
+            player.sendMessage(Text.literal(Localization.translate("borderquest.msg.rewardsDistributed")).formatted(Formatting.YELLOW), false);
         }
     }
 
@@ -548,14 +547,14 @@ public class BorderQuestManager {
 
     public Text getStatusText() {
         if (isLastStage())
-            return Text.literal("\u00a76=== Border Quest ===\n\u00a7aLA BARRIERE EST TOMBEE !");
+            return Text.literal(Localization.translate("borderquest.msg.statusBarrierFallen"));
 
         StageDefinition stage = getCurrentStage();
         StringBuilder sb = new StringBuilder();
-        sb.append("\u00a7e=== BQ Stade ").append(state.currentStage + 1)
-          .append("/").append(STAGES().size() - 1).append(" ===\n");
-        sb.append("\u00a7b").append(stage.title).append("\n");
-        sb.append("\u00a77Rayon: \u00a7f").append((int) stage.borderRadius).append(" blocs\n");
+        sb.append(Localization.translate("borderquest.msg.statusHeader", state.currentStage + 1,
+            STAGES().size() - 1)).append("\n");
+        sb.append(Localization.translate("borderquest.msg.statusStageTitle", stage.title)).append("\n");
+        sb.append(Localization.translate("borderquest.msg.statusRadius", (int) stage.borderRadius)).append("\n");
         for (ItemReq req : resolvedRequirements) {
             int submitted = Math.min(state.submittedItems.getOrDefault(req.itemId(), 0), req.count());
             boolean done = submitted >= req.count();
@@ -569,11 +568,11 @@ public class BorderQuestManager {
             int submittedXp = state.submittedXp;
             boolean done = submittedXp >= totalXpRequired;
             sb.append(done ? "\u00a7a[OK] " : "\u00a7c[ ]  ")
-              .append("XP: ").append(submittedXp).append("/").append(totalXpRequired).append("\n");
-            sb.append("\u00a77/bq submitxp <montant> pour donner de l'XP.\n");
+              .append(Localization.translate("borderquest.msg.statusXpLabel", submittedXp, totalXpRequired)).append("\n");
+            sb.append(Localization.translate("borderquest.msg.statusSubmitXpHint")).append("\n");
         }
 
-        sb.append("\u00a77/bq submit pour deposer.");
+        sb.append(Localization.translate("borderquest.msg.statusSubmitHint"));
         return Text.literal(sb.toString());
     }
 
@@ -602,7 +601,7 @@ public class BorderQuestManager {
         state.altarPositions.add(key);
         if (!name.isBlank()) state.altarNames.put(key, name);
         save();
-        String displayName = name.isBlank() ? "Autel" : name;
+        String displayName = name.isBlank() ? Localization.translate("borderquest.general.altar") : name;
         if (mapManager != null) mapManager.addAltarMarker(pos, displayName);
         return true;
     }
@@ -612,7 +611,7 @@ public class BorderQuestManager {
         String key = posKey(pos);
         state.altarNames.put(key, name);
         save();
-        if (mapManager != null) mapManager.addAltarMarker(pos, name.isBlank() ? "Autel" : name);
+        if (mapManager != null) mapManager.addAltarMarker(pos, name.isBlank() ? Localization.translate("borderquest.general.altar") : name);
     }
 
     public String getAltarName(BlockPos pos) {
@@ -651,11 +650,11 @@ public class BorderQuestManager {
      */
     public Text donateFromHand(ServerPlayerEntity player) {
         if (isLastStage())
-            return Text.literal("La barriere est deja levee !").formatted(Formatting.GOLD);
+            return Text.literal(Localization.translate("borderquest.msg.barrierAlreadyRaised")).formatted(Formatting.GOLD);
 
         ItemStack held = player.getMainHandStack();
         if (held.isEmpty())
-            return Text.literal("Tenez un objet requis en main.").formatted(Formatting.RED);
+            return Text.literal(Localization.translate("borderquest.msg.mustHoldRequiredItem")).formatted(Formatting.RED);
 
         String itemId = Registries.ITEM.getId(held.getItem()).toString();
 
@@ -665,12 +664,13 @@ public class BorderQuestManager {
             if (req.itemId().equals(itemId)) { matching = req; break; }
         }
         if (matching == null)
-            return Text.literal("Cet objet n'est pas requis ici.").formatted(Formatting.RED);
+            return Text.literal(Localization.translate("borderquest.msg.itemNotRequiredHere")).formatted(Formatting.RED);
 
         int alreadySubmitted = state.submittedItems.getOrDefault(itemId, 0);
         int remaining = matching.count() - alreadySubmitted;
         if (remaining <= 0)
-            return Text.literal("Deja complet pour " + itemId.replace("minecraft:", "") + " !").formatted(Formatting.GREEN);
+            return Text.literal(Localization.translate("borderquest.msg.itemAlreadyComplete", itemId.replace("minecraft:", "")))
+                .formatted(Formatting.GREEN);
 
         int toTake = Math.min(remaining, held.getCount());
         held.decrement(toTake);
@@ -685,8 +685,8 @@ public class BorderQuestManager {
         BorderQuestConfig cfgAlt = BorderQuestConfig.get();
         if (cfgAlt.donationAnnouncementsEnabled && toTake >= cfgAlt.donationAnnounceMinItems) {
             server.getPlayerManager().broadcast(
-                Text.literal("\u00a7b[BorderQuest] \u00a7f" + player.getName().getString()
-                    + " \u00a77a depose \u00a7f" + toTake + " " + name + " \u00a77a l'autel !"),
+                Text.literal(Localization.translate("borderquest.msg.publicAltarDepositAnnouncement",
+                    player.getName().getString(), toTake, name)),
                 false
             );
         }
@@ -698,11 +698,11 @@ public class BorderQuestManager {
 
         if (isStageComplete()) {
             advanceStage();
-            return Text.literal("Objectif atteint ! +" + toTake + " " + name + " (" + newTotal + "/" + matching.count() + ")")
-                .formatted(Formatting.GREEN);
+            return Text.literal(Localization.translate("borderquest.msg.altarDonationComplete",
+                toTake, name, newTotal, matching.count())).formatted(Formatting.GREEN);
         }
-        return Text.literal("+" + toTake + " " + name + " | " + newTotal + "/" + matching.count())
-            .formatted(Formatting.GREEN);
+        return Text.literal(Localization.translate("borderquest.msg.altarDonationProgress",
+            toTake, name, newTotal, matching.count())).formatted(Formatting.GREEN);
     }
 
     // -----------------------------------------------------------------------
