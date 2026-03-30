@@ -50,6 +50,12 @@
 
   "borderquest.msg.barrierAlreadyRaised": "[BorderQuest] The barrier is already fully raised!",
   "borderquest.msg.useSubmitXp": "[BorderQuest] Use /bq submitxp <amount> to donate XP.",
+  "borderquest.msg.noXpRequired": "[BorderQuest] No XP is required for this stage.",
+  "borderquest.msg.invalidXpAmount": "[BorderQuest] Invalid XP amount.",
+  "borderquest.msg.notEnoughXp": "[BorderQuest] You don't have enough XP.",
+  "borderquest.msg.xpObjectiveAlreadyMet": "[BorderQuest] XP objective is already met.",
+  "borderquest.msg.stageCompletedWithXp": "Objective reached with %d XP! The barrier is expanding!",
+  "borderquest.msg.xpSubmitted": "XP submitted: %d (%d/%d).",
   "borderquest.msg.noResourceRequirements": "[BorderQuest] This stage has no resource requirements.",
   "borderquest.msg.noResourcesToSubmit": "[BorderQuest] No required resources were found in your inventory.",
   "borderquest.msg.publicDonation": "[BorderQuest] %s has submitted %d item(s)!",

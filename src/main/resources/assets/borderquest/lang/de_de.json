@@ -50,6 +50,12 @@
 
   "borderquest.msg.barrierAlreadyRaised": "[BorderQuest] Die Grenze ist bereits vollständig aufgehoben!",
   "borderquest.msg.useSubmitXp": "[BorderQuest] Verwende /bq submitxp <Betrag>, um XP zu spenden.",
+  "borderquest.msg.noXpRequired": "[BorderQuest] Für diese Stufe wird keine XP benötigt.",
+  "borderquest.msg.invalidXpAmount": "[BorderQuest] Ungültige XP-Menge.",
+  "borderquest.msg.notEnoughXp": "[BorderQuest] Du hast nicht genug XP.",
+  "borderquest.msg.xpObjectiveAlreadyMet": "[BorderQuest] Das XP-Ziel ist bereits erreicht.",
+  "borderquest.msg.stageCompletedWithXp": "Ziel mit %d XP erreicht! Die Grenze erweitert sich!",
+  "borderquest.msg.xpSubmitted": "XP gespendet: %d (%d/%d).",
   "borderquest.msg.noResourceRequirements": "[BorderQuest] Diese Stufe hat keine Ressourcenanforderungen.",
   "borderquest.msg.noResourcesToSubmit": "[BorderQuest] Keine benötigten Ressourcen in deinem Inventar gefunden.",
   "borderquest.msg.publicDonation": "[BorderQuest] %s has submitted %d item(s)!",
