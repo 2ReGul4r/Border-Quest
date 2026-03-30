@@ -11,6 +11,7 @@ public class StageDefinition {
     public String title;
     public List<ItemReq> requirements;
     public List<CategoryReq> categoryRequirements;
+    public List<XpReq> xpRequirements;
 
     /** Constructeur no-arg requis par Gson. */
     public StageDefinition() {}
@@ -27,13 +28,23 @@ public class StageDefinition {
         this.categoryRequirements = categoryRequirements;
     }
 
+    public StageDefinition(double borderRadius, String title, List<ItemReq> requirements,
+                           List<CategoryReq> categoryRequirements, List<XpReq> xpRequirements) {
+        this.borderRadius = borderRadius;
+        this.title = title;
+        this.requirements = requirements;
+        this.categoryRequirements = categoryRequirements;
+        this.xpRequirements = xpRequirements;
+    }
+
     public double getDiameter() {
         return borderRadius * 2.0;
     }
 
     public boolean hasRequirements() {
         return (requirements != null && !requirements.isEmpty())
-            || (categoryRequirements != null && !categoryRequirements.isEmpty());
+            || (categoryRequirements != null && !categoryRequirements.isEmpty())
+            || (xpRequirements != null && !xpRequirements.isEmpty());
     }
 
     /**
@@ -66,6 +77,9 @@ public class StageDefinition {
 
         public Reward() {}
     }
+
+    /** Quantité d'XP à donner pour ce stade. */
+    public record XpReq(int count) {}
 
     /** Récompenses distribuées à tous les joueurs à la validation du stade. */
     public List<Reward> rewards = new java.util.ArrayList<>();
