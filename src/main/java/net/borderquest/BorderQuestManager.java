@@ -208,7 +208,7 @@ public class BorderQuestManager {
 
     private void animateBorderExpansion(double newDiameter) {
         BorderQuestConfig cfg = BorderQuestConfig.get();
-        long durationMs = cfg.borderExpansionDurationTicks * 50L;
+        long durationMs = cfg.borderExpansionDurationSeconds * 50L;
         long now = System.currentTimeMillis();
         double scale = cfg.netherScale;
         server.getOverworld().getWorldBorder()

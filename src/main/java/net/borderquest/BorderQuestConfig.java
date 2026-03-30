@@ -38,8 +38,8 @@ public class BorderQuestConfig {
     /** Distance d'avertissement avant le mur (en blocs). */
     public int borderWarningBlocks = 5;
 
-    /** Durée de l'agrandissement de la bordure en ticks (20 ticks = 1 seconde). */
-    public int borderExpansionDurationTicks = 200;
+    /** Durée de l'agrandissement de la bordure en secondes. */
+    public int borderExpansionDurationSeconds = 200;
 
     /**
      * Diviseur de la barrière pour le Nether (coordonnées Nether = Overworld / 8).
@@ -212,7 +212,7 @@ public class BorderQuestConfig {
         if (celebrationDurationTicks <= 0) celebrationDurationTicks = 200;
         if (borderDamagePerBlock < 0) borderDamagePerBlock = 0.2;
         if (borderWarningBlocks < 0) borderWarningBlocks = 5;
-        if (borderExpansionDurationTicks <= 0) borderExpansionDurationTicks = 200;
+        if (borderExpansionDurationSeconds <= 0) borderExpansionDurationSeconds = 200;
         if (netherScale <= 0) netherScale = 8.0;
         if (altarParticlePeriodTicks <= 0) altarParticlePeriodTicks = 20;
         if (donationAnnounceMinItems <= 0) donationAnnounceMinItems = 1;
