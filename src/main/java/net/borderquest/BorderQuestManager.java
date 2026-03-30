@@ -56,6 +56,7 @@ public class BorderQuestManager {
     private final Path savePath;
 
     private List<ItemReq> resolvedRequirements = new ArrayList<>();
+    private List<StageDefinition.XpReq> resolvedXpRequirements = new ArrayList<>();
     private Set<RegistryKey<Biome>> detectedBiomes = new HashSet<>();
     private SidebarDisplay sidebarDisplay;
 
@@ -141,9 +142,16 @@ public class BorderQuestManager {
                 resolvedRequirements.add(resolved);
             }
         }
+
+        if (stage.xpRequirements != null && !stage.xpRequirements.isEmpty()) {
+            resolvedXpRequirements = new ArrayList<>(stage.xpRequirements);
+        } else {
+            resolvedXpRequirements = List.of();
+        }
     }
 
     public List<ItemReq> getResolvedRequirements() { return resolvedRequirements; }
+    public List<StageDefinition.XpReq> getResolvedXpRequirements() { return resolvedXpRequirements; }
 
     // -----------------------------------------------------------------------
     // Centre de la barrière
@@ -351,6 +359,8 @@ public class BorderQuestManager {
         for (ItemReq req : resolvedRequirements) {
             if (state.submittedItems.getOrDefault(req.itemId(), 0) < req.count()) return false;
         }
+        int totalXpRequired = resolvedXpRequirements.stream().mapToInt(StageDefinition.XpReq::count).sum();
+        if (totalXpRequired > 0 && state.submittedXp < totalXpRequired) return false;
         return true;
     }
 
@@ -358,8 +368,12 @@ public class BorderQuestManager {
         if (isLastStage())
             return Text.literal("La barriere est deja entierement levee !").formatted(Formatting.GOLD);
 
-        if (resolvedRequirements.isEmpty())
-            return Text.literal("Aucune ressource requise pour ce stade.").formatted(Formatting.YELLOW);
+        if (resolvedRequirements.isEmpty()) {
+            if (resolvedXpRequirements != null && !resolvedXpRequirements.isEmpty()) {
+                return Text.translatable("borderquest.msg.useSubmitXp").formatted(Formatting.YELLOW);
+            }
+            return Text.translatable("borderquest.msg.noResourceRequirements").formatted(Formatting.YELLOW);
+        }
 
         boolean submittedAnything = false;
         StringBuilder log = new StringBuilder();
@@ -384,7 +398,7 @@ public class BorderQuestManager {
         }
 
         if (!submittedAnything)
-            return Text.literal("Vous n'avez aucune ressource requise.").formatted(Formatting.RED);
+            return Text.translatable("borderquest.msg.noResourcesToSubmit").formatted(Formatting.RED);
 
         state.playerDonations.merge(playerUuid, totalDonated, Integer::sum);
         state.playerNames.put(playerUuid, playerName);
@@ -410,12 +424,46 @@ public class BorderQuestManager {
         return Text.literal("Ressources soumises :\n" + log.toString().trim()).formatted(Formatting.GREEN);
     }
 
+    public Text submitXp(ServerPlayerEntity player, int amount) {
+        if (isLastStage())
+            return Text.translatable("borderquest.msg.barrierAlreadyRaised").formatted(Formatting.GOLD);
+
+        int totalXpRequired = resolvedXpRequirements.stream().mapToInt(StageDefinition.XpReq::count).sum();
+        if (totalXpRequired <= 0)
+            return Text.translatable("borderquest.msg.noXpRequired").formatted(Formatting.YELLOW);
+
+        if (amount <= 0)
+            return Text.translatable("borderquest.msg.invalidXpAmount").formatted(Formatting.RED);
+
+        int currentXp = player.totalExperience;
+        if (currentXp <= 0)
+            return Text.translatable("borderquest.msg.notEnoughXp").formatted(Formatting.RED);
+
+        int remaining = totalXpRequired - state.submittedXp;
+        if (remaining <= 0)
+            return Text.translatable("borderquest.msg.xpObjectiveAlreadyMet").formatted(Formatting.GREEN);
+
+        int toDonate = Math.min(amount, Math.min(remaining, currentXp));
+        player.addExperience(-toDonate);
+        state.submittedXp += toDonate;
+
+        String playerName = player.getName().getString();
+        state.playerNames.put(player.getUuidAsString(), playerName);
+
+        if (isStageComplete()) {
+            advanceStage();
+            return Text.translatable("borderquest.msg.stageCompletedWithXp", toDonate).formatted(Formatting.GREEN);
+        }
+        return Text.translatable("borderquest.msg.xpSubmitted", toDonate, state.submittedXp, totalXpRequired).formatted(Formatting.GREEN);
+    }
+
     private void advanceStage() {
         // Récupérer les récompenses avant d'incrémenter
         List<StageDefinition.Reward> rewards = STAGES().get(state.currentStage).rewards;
 
         state.currentStage++;
         state.submittedItems.clear();
+        state.submittedXp = 0;
         save();
 
         StageDefinition newStage = STAGES().get(state.currentStage);
@@ -512,6 +560,16 @@ public class BorderQuestManager {
             sb.append(done ? "\u00a7a[OK] " : "\u00a7c[ ]  ")
               .append(name).append(": ").append(submitted).append("/").append(req.count()).append("\n");
         }
+
+        int totalXpRequired = resolvedXpRequirements.stream().mapToInt(StageDefinition.XpReq::count).sum();
+        if (totalXpRequired > 0) {
+            int submittedXp = state.submittedXp;
+            boolean done = submittedXp >= totalXpRequired;
+            sb.append(done ? "\u00a7a[OK] " : "\u00a7c[ ]  ")
+              .append("XP: ").append(submittedXp).append("/").append(totalXpRequired).append("\n");
+            sb.append("\u00a77/bq submitxp <montant> pour donner de l'XP.\n");
+        }
+
         sb.append("\u00a77/bq submit pour deposer.");
         return Text.literal(sb.toString());
     }

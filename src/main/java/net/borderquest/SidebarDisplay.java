@@ -87,7 +87,14 @@ public class SidebarDisplay {
             String symbol = done ? "\u2714 " : "\u2718 ";
             t.append(Text.literal("  " + symbol + name + " : " + submitted + "/" + req.count() + "\n").formatted(color));
         }
-
+        int totalXpRequired = manager.getResolvedXpRequirements().stream().mapToInt(StageDefinition.XpReq::count).sum();
+        if (totalXpRequired > 0) {
+            int submittedXp = state.submittedXp;
+            boolean done = submittedXp >= totalXpRequired;
+            Formatting color = done ? Formatting.GREEN : Formatting.RED;
+            String symbol = done ? "\u2714 " : "\u2718 ";
+            t.append(Text.literal("  " + symbol + "XP : " + submittedXp + "/" + totalXpRequired + "\n").formatted(color));
+        }
         return t;
     }
 

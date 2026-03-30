@@ -2,6 +2,7 @@ package net.borderquest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.List;
 
 import static net.borderquest.StageDefinition.CategoryReq;
 import static net.borderquest.StageDefinition.ItemReq;
+import static net.borderquest.StageDefinition.XpReq;
 
 /**
  * Configuration du mod chargée depuis config/borderquest.json.
@@ -172,6 +174,7 @@ public class BorderQuestConfig {
         for (StageDefinition s : stages) {
             if (s.requirements == null) s.requirements = List.of();
             if (s.categoryRequirements == null) s.categoryRequirements = List.of();
+            if (s.xpRequirements == null) s.xpRequirements = List.of();
             if (s.rewards == null) s.rewards = new java.util.ArrayList<>();
         }
     }
@@ -195,7 +198,8 @@ public class BorderQuestConfig {
         return List.of(
             new StageDefinition(10, "Defricher la zone",
                 List.of(new ItemReq("minecraft:cobblestone", 64)),
-                List.of(new CategoryReq("logs", 64))),
+                List.of(new CategoryReq("logs", 64)),
+                List.of(new XpReq(100))),
 
             new StageDefinition(25, "Premiers pas vers la civilisation",
                 List.of(

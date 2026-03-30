@@ -1,6 +1,7 @@
 package net.borderquest;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.command.CommandRegistryAccess;
@@ -35,6 +36,11 @@ public class BorderQuestCommand {
                 // /bq submit — soumet les items de l'inventaire
                 .then(CommandManager.literal("submit")
                     .executes(BorderQuestCommand::submit))
+
+                // /bq submitxp <amount> — soumet de l'XP pour cet objectif
+                .then(CommandManager.literal("submitxp")
+                    .then(CommandManager.argument("amount", IntegerArgumentType.integer(1))
+                        .executes(BorderQuestCommand::submitXp)))
 
                 // /bq reset — remet à zéro (op niveau 2)
                 .then(CommandManager.literal("reset")
@@ -96,6 +102,22 @@ public class BorderQuestCommand {
         return 1;
     }
 
+    private static int submitXp(CommandContext<ServerCommandSource> ctx) {
+        BorderQuestManager mgr = BorderQuest.manager;
+        if (mgr == null) { ctx.getSource().sendMessage(noManager()); return 0; }
+
+        var player = ctx.getSource().getPlayer();
+        if (player == null) {
+            ctx.getSource().sendMessage(
+                Text.translatable("borderquest.msg.mustExecAsPlayer").formatted(Formatting.RED));
+            return 0;
+        }
+
+        int amount = IntegerArgumentType.getInteger(ctx, "amount");
+        ctx.getSource().sendMessage(mgr.submitXp(player, amount));
+        return 1;
+    }
+
     private static int reset(CommandContext<ServerCommandSource> ctx) {
         BorderQuestManager mgr = BorderQuest.manager;
         if (mgr == null) { ctx.getSource().sendMessage(noManager()); return 0; }
@@ -132,6 +154,7 @@ public class BorderQuestCommand {
         // On avance manuellement
         state.currentStage++;
         state.submittedItems.clear();
+        state.submittedXp = 0;
         mgr.save();
         mgr.applyBorder();
         mgr.updateSidebar();
