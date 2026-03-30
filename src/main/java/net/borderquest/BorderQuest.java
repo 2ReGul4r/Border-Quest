@@ -1,4 +1,4 @@
-﻿package net.borderquest;
+package net.borderquest;
 
 import net.borderquest.map.MapIntegrationManager;
 import net.fabricmc.api.ModInitializer;

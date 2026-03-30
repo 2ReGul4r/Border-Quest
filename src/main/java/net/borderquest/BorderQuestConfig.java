@@ -1,4 +1,4 @@
-﻿package net.borderquest;
+package net.borderquest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

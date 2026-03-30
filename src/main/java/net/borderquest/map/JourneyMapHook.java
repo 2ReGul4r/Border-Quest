@@ -1,4 +1,4 @@
-﻿package net.borderquest.map;
+package net.borderquest.map;
 
 import net.borderquest.BorderQuest;
 import net.borderquest.Localization;

@@ -1,4 +1,4 @@
-﻿package net.borderquest.map;
+package net.borderquest.map;
 
 import de.bluecolored.bluemap.api.BlueMapAPI;
 import de.bluecolored.bluemap.api.BlueMapMap;

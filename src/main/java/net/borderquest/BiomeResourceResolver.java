@@ -1,4 +1,4 @@
-﻿package net.borderquest;
+package net.borderquest;
 
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;

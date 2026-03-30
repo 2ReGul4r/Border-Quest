@@ -1,4 +1,4 @@
-﻿package net.borderquest;
+package net.borderquest;
 
 import java.net.URI;
 import java.net.http.HttpClient;

@@ -1,4 +1,4 @@
-﻿package net.borderquest;
+package net.borderquest;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;

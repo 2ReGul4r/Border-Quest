@@ -1,4 +1,4 @@
-﻿package net.borderquest.mixin;
+package net.borderquest.mixin;
 
 import net.borderquest.BorderQuest;
 import net.borderquest.BorderQuestConfig;
