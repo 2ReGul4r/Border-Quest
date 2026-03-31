@@ -230,9 +230,13 @@ public class BorderQuestCommand {
         t.append(Text.literal(Localization.translate("borderquest.msg.topDonors")).formatted(Formatting.GOLD, Formatting.BOLD));
         t.append(Text.literal("\n"));
         for (int i = 0; i < top.size(); i++) {
-            String name = mgr.getState().playerNames.getOrDefault(top.get(i).getKey(), "???");
+            String uuid = top.get(i).getKey();
+            String name = mgr.getState().playerNames.getOrDefault(uuid, "???");
+            int items = top.get(i).getValue();
+            int xp = mgr.getState().playerXpDonations.getOrDefault(uuid, 0);
             Formatting color = (i == 0) ? Formatting.GOLD : (i == 1) ? Formatting.GRAY : Formatting.WHITE;
-            t.append(Text.literal("#" + (i + 1) + " " + name + " - " + top.get(i).getValue() + "\n").formatted(color));
+            String line = "#" + (i + 1) + " " + name + " - " + items + " items" + (xp > 0 ? " - " + xp + " XP" : "");
+            t.append(Text.literal(line + "\n").formatted(color));
         }
         ctx.getSource().sendMessage(t);
         return 1;

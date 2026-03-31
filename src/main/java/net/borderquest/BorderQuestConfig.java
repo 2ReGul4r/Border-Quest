@@ -157,6 +157,7 @@ public class BorderQuestConfig {
      *   - title          : nom du stade affiché aux joueurs
      *   - requirements   : objets fixes à déposer (itemId + count)
      *   - categoryRequirements : catégories résolues selon le biome (ex. "logs")
+     *   - tagRequirements : tous les objets d'un tag acceptés (ex. "minecraft:logs")
      */
     public List<StageDefinition> stages = defaultStages();
 
@@ -235,6 +236,7 @@ public class BorderQuestConfig {
         for (StageDefinition s : stages) {
             if (s.requirements == null) s.requirements = List.of();
             if (s.categoryRequirements == null) s.categoryRequirements = List.of();
+            if (s.tagRequirements == null) s.tagRequirements = List.of();
             if (s.xpRequirements == null) s.xpRequirements = List.of();
             if (s.rewards == null) s.rewards = new java.util.ArrayList<>();
         }
@@ -257,46 +259,70 @@ public class BorderQuestConfig {
 
     private static List<StageDefinition> defaultStages() {
         return List.of(
-            new StageDefinition(10, "Defricher la zone",
-                List.of(new ItemReq("minecraft:cobblestone", 64)),
-                List.of(new CategoryReq("logs", 64)),
-                List.of(new XpReq(100))),
+            StageDefinition.builder()
+                .borderRadius(10)
+                .title("Defricher la zone")
+                .requirements(List.of(new ItemReq("minecraft:cobblestone", 64)))
+                .categoryRequirements(List.of(new CategoryReq("logs", 64)))
+                .xpRequirements(List.of(new XpReq(100)))
+                .build(),
 
-            new StageDefinition(25, "Premiers pas vers la civilisation",
-                List.of(
+            StageDefinition.builder()
+                .borderRadius(25)
+                .title("Premiers pas vers la civilisation")
+                .requirements(List.of(
                     new ItemReq("minecraft:iron_ingot", 32),
                     new ItemReq("minecraft:bread", 32)
-                )),
+                ))
+                .build(),
 
-            new StageDefinition(50, "Expansion miniere",
-                List.of(
+            StageDefinition.builder()
+                .borderRadius(50)
+                .title("Expansion miniere")
+                .requirements(List.of(
                     new ItemReq("minecraft:iron_ingot", 64),
                     new ItemReq("minecraft:gold_ingot", 16)
-                )),
+                ))
+                .build(),
 
-            new StageDefinition(100, "Maitrise des metaux",
-                List.of(
+            StageDefinition.builder()
+                .borderRadius(100)
+                .title("Maitrise des metaux")
+                .requirements(List.of(
                     new ItemReq("minecraft:diamond", 8),
                     new ItemReq("minecraft:iron_ingot", 32)
-                )),
+                ))
+                .build(),
 
-            new StageDefinition(200, "Vers le Nether",
-                List.of(
+            StageDefinition.builder()
+                .borderRadius(200)
+                .title("Vers le Nether")
+                .requirements(List.of(
                     new ItemReq("minecraft:obsidian", 10),
                     new ItemReq("minecraft:diamond", 4)
-                )),
+                ))
+                .build(),
 
-            new StageDefinition(400, "Conquete du Nether",
-                List.of(
+            StageDefinition.builder()
+                .borderRadius(400)
+                .title("Conquete du Nether")
+                .requirements(List.of(
                     new ItemReq("minecraft:blaze_rod", 16),
                     new ItemReq("minecraft:ender_pearl", 8)
-                )),
+                ))
+                .build(),
 
-            new StageDefinition(800, "Invocation du Wither",
-                List.of(new ItemReq("minecraft:nether_star", 1))),
+            StageDefinition.builder()
+                .borderRadius(800)
+                .title("Invocation du Wither")
+                .requirements(List.of(new ItemReq("minecraft:nether_star", 1)))
+                .build(),
 
-            new StageDefinition(29999984, "LIBERTE ! La barriere est tombee !",
-                List.of())
+            StageDefinition.builder()
+                .borderRadius(29999984)
+                .title("LIBERTE ! La barriere est tombee !")
+                .requirements(List.of())
+                .build()
         );
     }
 }

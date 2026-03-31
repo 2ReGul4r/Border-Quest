@@ -25,6 +25,8 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
@@ -55,6 +57,7 @@ public class BorderQuestManager {
     private final Path savePath;
 
     private List<ItemReq> resolvedRequirements = new ArrayList<>();
+    private List<StageDefinition.TagReq> resolvedTagRequirements = new ArrayList<>();
     private List<StageDefinition.XpReq> resolvedXpRequirements = new ArrayList<>();
     private Set<RegistryKey<Biome>> detectedBiomes = new HashSet<>();
     private SidebarDisplay sidebarDisplay;
@@ -100,6 +103,8 @@ public class BorderQuestManager {
                 if (state == null) state = new QuestState();
                 if (state.submittedItems == null) state.submittedItems = new HashMap<>();
                 if (state.playerDonations == null) state.playerDonations = new HashMap<>();
+                if (state.playerXpDonations == null) state.playerXpDonations = new HashMap<>();
+                if (state.submittedTagItems == null) state.submittedTagItems = new HashMap<>();
                 if (state.playerNames == null) state.playerNames = new HashMap<>();
                 if (state.altarPositions == null) state.altarPositions = new java.util.ArrayList<>();
                 if (state.altarNames == null)     state.altarNames     = new java.util.HashMap<>();
@@ -142,6 +147,10 @@ public class BorderQuestManager {
             }
         }
 
+        resolvedTagRequirements = stage.tagRequirements != null
+            ? new ArrayList<>(stage.tagRequirements)
+            : List.of();
+
         if (stage.xpRequirements != null && !stage.xpRequirements.isEmpty()) {
             resolvedXpRequirements = new ArrayList<>(stage.xpRequirements);
         } else {
@@ -150,6 +159,7 @@ public class BorderQuestManager {
     }
 
     public List<ItemReq> getResolvedRequirements() { return resolvedRequirements; }
+    public List<StageDefinition.TagReq> getResolvedTagRequirements() { return resolvedTagRequirements; }
     public List<StageDefinition.XpReq> getResolvedXpRequirements() { return resolvedXpRequirements; }
 
     // -----------------------------------------------------------------------
@@ -362,6 +372,9 @@ public class BorderQuestManager {
         for (ItemReq req : resolvedRequirements) {
             if (state.submittedItems.getOrDefault(req.itemId(), 0) < req.count()) return false;
         }
+        for (StageDefinition.TagReq tagReq : resolvedTagRequirements) {
+            if (countSubmittedForTag(tagReq.tagId()) < tagReq.count()) return false;
+        }
         int totalXpRequired = resolvedXpRequirements.stream().mapToInt(StageDefinition.XpReq::count).sum();
         if (totalXpRequired > 0 && state.submittedXp < totalXpRequired) return false;
         return true;
@@ -371,7 +384,7 @@ public class BorderQuestManager {
         if (isLastStage())
             return Text.literal(Localization.translate("borderquest.msg.barrierAlreadyRaised")).formatted(Formatting.GOLD);
 
-        if (resolvedRequirements.isEmpty()) {
+        if (resolvedRequirements.isEmpty() && resolvedTagRequirements.isEmpty()) {
             if (resolvedXpRequirements != null && !resolvedXpRequirements.isEmpty()) {
                 return Text.literal(Localization.translate("borderquest.msg.useSubmitXp")).formatted(Formatting.YELLOW);
             }
@@ -398,6 +411,26 @@ public class BorderQuestManager {
             int newTotal = Math.min(state.submittedItems.get(req.itemId()), req.count());
             log.append(String.format("  +%d %s (%d/%d)\n", toTake,
                 req.itemId().replace("minecraft:", ""), newTotal, req.count()));
+        }
+
+        for (StageDefinition.TagReq tagReq : resolvedTagRequirements) {
+            int submitted = countSubmittedForTag(tagReq.tagId());
+            int remaining = tagReq.count() - submitted;
+            if (remaining <= 0) continue;
+            TagKey<Item> tag = parseItemTag(tagReq.tagId());
+            int toTake = Math.min(remaining, countInInventory(player, tag));
+            if (toTake <= 0) continue;
+            Map<String, Integer> removed = removeFromInventory(player, tag, toTake);
+            if (removed.isEmpty()) continue;
+            submittedAnything = true;
+            int donated = removed.values().stream().mapToInt(Integer::intValue).sum();
+            totalDonated += donated;
+            for (Map.Entry<String, Integer> entry : removed.entrySet()) {
+                state.submittedItems.merge(entry.getKey(), entry.getValue(), Integer::sum);
+            }
+            state.submittedTagItems.merge(tagReq.tagId(), donated, Integer::sum);
+            log.append(String.format("  +%d %s (%d/%d)\n", donated,
+                tagReq.tagId().replace("minecraft:", ""), submitted + donated, tagReq.count()));
         }
 
         if (!submittedAnything)
@@ -450,8 +483,11 @@ public class BorderQuestManager {
         player.addExperience(-toDonate);
         state.submittedXp += toDonate;
 
+        String playerUuid = player.getUuidAsString();
         String playerName = player.getName().getString();
-        state.playerNames.put(player.getUuidAsString(), playerName);
+        state.playerNames.put(playerUuid, playerName);
+
+        state.playerXpDonations.merge(playerUuid, toDonate, Integer::sum);
 
         if (isStageComplete()) {
             advanceStage();
@@ -466,6 +502,7 @@ public class BorderQuestManager {
 
         state.currentStage++;
         state.submittedItems.clear();
+        state.submittedTagItems.clear();
         state.submittedXp = 0;
         save();
 
@@ -559,6 +596,14 @@ public class BorderQuestManager {
             int submitted = Math.min(state.submittedItems.getOrDefault(req.itemId(), 0), req.count());
             boolean done = submitted >= req.count();
             String name = req.itemId().replace("minecraft:", "");
+            sb.append(done ? "\u00a7a[OK] " : "\u00a7c[ ]  ")
+              .append(name).append(": ").append(submitted).append("/").append(req.count()).append("\n");
+        }
+
+        for (StageDefinition.TagReq req : resolvedTagRequirements) {
+            int submitted = Math.min(countSubmittedForTag(req.tagId()), req.count());
+            boolean done = submitted >= req.count();
+            String name = req.tagId().replace("minecraft:", "");
             sb.append(done ? "\u00a7a[OK] " : "\u00a7c[ ]  ")
               .append(name).append(": ").append(submitted).append("/").append(req.count()).append("\n");
         }
@@ -658,51 +703,99 @@ public class BorderQuestManager {
 
         String itemId = Registries.ITEM.getId(held.getItem()).toString();
 
-        // Chercher si cet item est requis
+        // Chercher si cet item est requis ou correspond à une TagRequirement
         ItemReq matching = null;
         for (ItemReq req : resolvedRequirements) {
             if (req.itemId().equals(itemId)) { matching = req; break; }
         }
-        if (matching == null)
-            return Text.literal(Localization.translate("borderquest.msg.itemNotRequiredHere")).formatted(Formatting.RED);
-
-        int alreadySubmitted = state.submittedItems.getOrDefault(itemId, 0);
-        int remaining = matching.count() - alreadySubmitted;
-        if (remaining <= 0)
-            return Text.literal(Localization.translate("borderquest.msg.itemAlreadyComplete", itemId.replace("minecraft:", "")))
-                .formatted(Formatting.GREEN);
-
-        int toTake = Math.min(remaining, held.getCount());
-        held.decrement(toTake);
-        state.submittedItems.merge(itemId, toTake, Integer::sum);
-
-        state.playerDonations.merge(player.getUuidAsString(), toTake, Integer::sum);
-        state.playerNames.put(player.getUuidAsString(), player.getName().getString());
-
-        String name = itemId.replace("minecraft:", "");
-
-        // Annonce publique si le don dépasse le seuil configuré
-        BorderQuestConfig cfgAlt = BorderQuestConfig.get();
-        if (cfgAlt.donationAnnouncementsEnabled && toTake >= cfgAlt.donationAnnounceMinItems) {
-            server.getPlayerManager().broadcast(
-                Text.literal(Localization.translate("borderquest.msg.publicAltarDepositAnnouncement",
-                    player.getName().getString(), toTake, name)),
-                false
-            );
+        StageDefinition.TagReq matchingTag = null;
+        if (matching == null) {
+            for (StageDefinition.TagReq req : resolvedTagRequirements) {
+                TagKey<Item> tag = parseItemTag(req.tagId());
+                if (held.isIn(tag)) {
+                    matchingTag = req;
+                    break;
+                }
+            }
+            if (matchingTag == null)
+                return Text.literal(Localization.translate("borderquest.msg.itemNotRequiredHere")).formatted(Formatting.RED);
         }
 
-        save();
-        updateSidebar();
+        if (matching != null) {
+            int alreadySubmitted = state.submittedItems.getOrDefault(itemId, 0);
+            int remaining = matching.count() - alreadySubmitted;
+            if (remaining <= 0)
+                return Text.literal(Localization.translate("borderquest.msg.itemAlreadyComplete", itemId.replace("minecraft:", "")))
+                    .formatted(Formatting.GREEN);
 
-        int newTotal = Math.min(state.submittedItems.get(itemId), matching.count());
+            int toTake = Math.min(remaining, held.getCount());
+            held.decrement(toTake);
+            state.submittedItems.merge(itemId, toTake, Integer::sum);
+            state.playerDonations.merge(player.getUuidAsString(), toTake, Integer::sum);
+            state.playerNames.put(player.getUuidAsString(), player.getName().getString());
 
-        if (isStageComplete()) {
-            advanceStage();
-            return Text.literal(Localization.translate("borderquest.msg.altarDonationComplete",
+            String name = itemId.replace("minecraft:", "");
+
+            BorderQuestConfig cfgAlt = BorderQuestConfig.get();
+            if (cfgAlt.donationAnnouncementsEnabled && toTake >= cfgAlt.donationAnnounceMinItems) {
+                server.getPlayerManager().broadcast(
+                    Text.literal(Localization.translate("borderquest.msg.publicAltarDepositAnnouncement",
+                        player.getName().getString(), toTake, name)),
+                    false
+                );
+            }
+
+            save();
+            updateSidebar();
+
+            int newTotal = Math.min(state.submittedItems.get(itemId), matching.count());
+
+            if (isStageComplete()) {
+                advanceStage();
+                return Text.literal(Localization.translate("borderquest.msg.altarDonationComplete",
+                    toTake, name, newTotal, matching.count())).formatted(Formatting.GREEN);
+            }
+            return Text.literal(Localization.translate("borderquest.msg.altarDonationProgress",
                 toTake, name, newTotal, matching.count())).formatted(Formatting.GREEN);
         }
-        return Text.literal(Localization.translate("borderquest.msg.altarDonationProgress",
-            toTake, name, newTotal, matching.count())).formatted(Formatting.GREEN);
+
+        if (matchingTag != null) {
+            int submitted = countSubmittedForTag(matchingTag.tagId());
+            int remaining = matchingTag.count() - submitted;
+            if (remaining <= 0)
+                return Text.literal(Localization.translate("borderquest.msg.itemAlreadyComplete", matchingTag.tagId().replace("minecraft:", "")))
+                    .formatted(Formatting.GREEN);
+
+            int toTake = Math.min(remaining, held.getCount());
+            held.decrement(toTake);
+            state.submittedItems.merge(itemId, toTake, Integer::sum);
+            state.submittedTagItems.merge(matchingTag.tagId(), toTake, Integer::sum);
+            state.playerDonations.merge(player.getUuidAsString(), toTake, Integer::sum);
+            state.playerNames.put(player.getUuidAsString(), player.getName().getString());
+
+            String name = matchingTag.tagId().replace("minecraft:", "");
+            BorderQuestConfig cfgAlt = BorderQuestConfig.get();
+            if (cfgAlt.donationAnnouncementsEnabled && toTake >= cfgAlt.donationAnnounceMinItems) {
+                server.getPlayerManager().broadcast(
+                    Text.literal(Localization.translate("borderquest.msg.publicAltarDepositAnnouncement",
+                        player.getName().getString(), toTake, name)),
+                    false
+                );
+            }
+
+            save();
+            updateSidebar();
+
+            int newTotal = Math.min(countSubmittedForTag(matchingTag.tagId()), matchingTag.count());
+            if (isStageComplete()) {
+                advanceStage();
+                return Text.literal(Localization.translate("borderquest.msg.altarDonationComplete",
+                    toTake, name, newTotal, matchingTag.count())).formatted(Formatting.GREEN);
+            }
+            return Text.literal(Localization.translate("borderquest.msg.altarDonationProgress",
+                toTake, name, newTotal, matchingTag.count())).formatted(Formatting.GREEN);
+        }
+        return Text.literal(Localization.translate("borderquest.msg.itemNotRequiredHere")).formatted(Formatting.RED);
     }
 
     // -----------------------------------------------------------------------
@@ -728,6 +821,49 @@ public class BorderQuestManager {
                 toRemove -= take;
             }
         }
+    }
+
+    private TagKey<Item> parseItemTag(String tagId) {
+        String namespace = "minecraft";
+        String path = tagId;
+        if (tagId.indexOf(':') >= 0) {
+            String[] parts = tagId.split(":", 2);
+            namespace = parts[0];
+            path = parts[1];
+        }
+        return TagKey.of(RegistryKeys.ITEM, Identifier.of(namespace, path));
+    }
+
+    private int countSubmittedForTag(String tagId) {
+        return state.submittedTagItems.getOrDefault(tagId, 0);
+    }
+
+    public int getSubmittedTagCount(String tagId) {
+        return countSubmittedForTag(tagId);
+    }
+
+    private int countInInventory(ServerPlayerEntity player, TagKey<Item> tag) {
+        int count = 0;
+        for (int i = 0; i < player.getInventory().size(); i++) {
+            ItemStack stack = player.getInventory().getStack(i);
+            if (!stack.isEmpty() && stack.isIn(tag)) count += stack.getCount();
+        }
+        return count;
+    }
+
+    private Map<String, Integer> removeFromInventory(ServerPlayerEntity player, TagKey<Item> tag, int amount) {
+        Map<String, Integer> removed = new HashMap<>();
+        int toRemove = amount;
+        for (int i = 0; i < player.getInventory().size() && toRemove > 0; i++) {
+            ItemStack stack = player.getInventory().getStack(i);
+            if (stack.isEmpty() || !stack.isIn(tag)) continue;
+            int take = Math.min(stack.getCount(), toRemove);
+            stack.decrement(take);
+            String itemId = Registries.ITEM.getId(stack.getItem()).toString();
+            removed.merge(itemId, take, Integer::sum);
+            toRemove -= take;
+        }
+        return removed;
     }
 }
 

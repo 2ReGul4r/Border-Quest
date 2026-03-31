@@ -22,6 +22,11 @@ public class QuestState {
     /** UUID (string) -> total items donnés tous stades confondus */
     public Map<String, Integer> playerDonations = new HashMap<>();
 
+    /** UUID (string) -> total XP donnés tous stades confondus */
+    public Map<String, Integer> playerXpDonations = new HashMap<>();
+
+    /** tagId -> quantité soumise pour ce stade */
+    public Map<String, Integer> submittedTagItems = new HashMap<>();
     /** UUID (string) -> dernier pseudo connu */
     public Map<String, String> playerNames = new HashMap<>();
 
@@ -34,8 +39,10 @@ public class QuestState {
     public void reset() {
         currentStage = 0;
         submittedItems.clear();
+        submittedTagItems.clear();
         submittedXp = 0;
         playerDonations.clear();
+        playerXpDonations.clear();
         playerNames.clear();
     }
 }

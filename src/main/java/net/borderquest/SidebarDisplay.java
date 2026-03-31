@@ -9,7 +9,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -87,6 +86,14 @@ public class SidebarDisplay {
             String symbol = done ? "\u2714 " : "\u2718 ";
             t.append(Text.literal("  " + symbol + name + " : " + submitted + "/" + req.count() + "\n").formatted(color));
         }
+        for (StageDefinition.TagReq req : manager.getResolvedTagRequirements()) {
+            int submitted = Math.min(manager.getSubmittedTagCount(req.tagId()), req.count());
+            boolean done  = submitted >= req.count();
+            String name   = req.tagId().replace("minecraft:", "");
+            Formatting color = done ? Formatting.GREEN : Formatting.RED;
+            String symbol = done ? "✔ " : "✘ ";
+            t.append(Text.literal("  " + symbol + name + " : " + submitted + "/" + req.count() + "\n").formatted(color));
+        }
         int totalXpRequired = manager.getResolvedXpRequirements().stream().mapToInt(StageDefinition.XpReq::count).sum();
         if (totalXpRequired > 0) {
             int submittedXp = state.submittedXp;
@@ -100,21 +107,34 @@ public class SidebarDisplay {
 
     private Text buildFooter(BorderQuestManager manager) {
         QuestState state = manager.getState();
-        if (state.playerDonations.isEmpty()) return Text.empty();
+        if (state.playerDonations.isEmpty() && state.playerXpDonations.isEmpty()) return Text.empty();
 
         MutableText t = Text.empty();
         t.append(Text.literal("\n"));
         t.append(Text.literal(BorderQuestConfig.get().sidebarFooterTopDonors + "\n").formatted(Formatting.GOLD, Formatting.BOLD));
 
-        List<Map.Entry<String, Integer>> top = state.playerDonations.entrySet().stream()
-            .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-            .limit(3)
+        List<String> players = state.playerDonations.keySet().stream()
+            .collect(Collectors.toSet())
+            .stream()
             .collect(Collectors.toList());
+        state.playerXpDonations.keySet().stream()
+            .filter(uuid -> !players.contains(uuid))
+            .forEach(players::add);
+
+        players.sort((a, b) -> {
+            int diff = Integer.compare(state.playerDonations.getOrDefault(b, 0), state.playerDonations.getOrDefault(a, 0));
+            if (diff != 0) return diff;
+            return Integer.compare(state.playerXpDonations.getOrDefault(b, 0), state.playerXpDonations.getOrDefault(a, 0));
+        });
 
         String[] prefixes = {"\u00a76#1 ", "\u00a77#2 ", "\u00a77#3 "};
-        for (int i = 0; i < top.size(); i++) {
-            String name = state.playerNames.getOrDefault(top.get(i).getKey(), "???");
-            t.append(Text.literal(prefixes[i] + name + " - " + top.get(i).getValue() + "\n"));
+        for (int i = 0; i < Math.min(players.size(), 3); i++) {
+            String uuid = players.get(i);
+            String name = state.playerNames.getOrDefault(uuid, "???");
+            int items = state.playerDonations.getOrDefault(uuid, 0);
+            int xp = state.playerXpDonations.getOrDefault(uuid, 0);
+            String line = prefixes[i] + name + " - " + items + " items" + (xp > 0 ? " - " + xp + " XP" : "");
+            t.append(Text.literal(line + "\n"));
         }
 
         return t;

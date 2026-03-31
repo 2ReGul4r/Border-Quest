@@ -11,30 +11,20 @@ public class StageDefinition {
     public String title;
     public List<ItemReq> requirements;
     public List<CategoryReq> categoryRequirements;
+    public List<TagReq> tagRequirements;
     public List<XpReq> xpRequirements;
 
     /** Constructeur no-arg requis par Gson. */
     public StageDefinition() {}
 
-    public StageDefinition(double borderRadius, String title, List<ItemReq> requirements) {
-        this(borderRadius, title, requirements, List.of());
-    }
-
-    public StageDefinition(double borderRadius, String title, List<ItemReq> requirements,
-                           List<CategoryReq> categoryRequirements) {
-        this.borderRadius = borderRadius;
-        this.title = title;
-        this.requirements = requirements;
-        this.categoryRequirements = categoryRequirements;
-    }
-
-    public StageDefinition(double borderRadius, String title, List<ItemReq> requirements,
-                           List<CategoryReq> categoryRequirements, List<XpReq> xpRequirements) {
-        this.borderRadius = borderRadius;
-        this.title = title;
-        this.requirements = requirements;
-        this.categoryRequirements = categoryRequirements;
-        this.xpRequirements = xpRequirements;
+    private StageDefinition(Builder builder) {
+        this.borderRadius = builder.borderRadius;
+        this.title = builder.title;
+        this.requirements = builder.requirements;
+        this.categoryRequirements = builder.categoryRequirements;
+        this.tagRequirements = builder.tagRequirements;
+        this.xpRequirements = builder.xpRequirements;
+        this.rewards = builder.rewards;
     }
 
     public double getDiameter() {
@@ -44,7 +34,61 @@ public class StageDefinition {
     public boolean hasRequirements() {
         return (requirements != null && !requirements.isEmpty())
             || (categoryRequirements != null && !categoryRequirements.isEmpty())
+            || (tagRequirements != null && !tagRequirements.isEmpty())
             || (xpRequirements != null && !xpRequirements.isEmpty());
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private double borderRadius;
+        private String title;
+        private List<ItemReq> requirements = List.of();
+        private List<CategoryReq> categoryRequirements = List.of();
+        private List<TagReq> tagRequirements = List.of();
+        private List<XpReq> xpRequirements = List.of();
+        private List<Reward> rewards = new java.util.ArrayList<>();
+
+        public Builder borderRadius(double borderRadius) {
+            this.borderRadius = borderRadius;
+            return this;
+        }
+
+        public Builder title(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public Builder requirements(List<ItemReq> requirements) {
+            this.requirements = requirements == null ? List.of() : requirements;
+            return this;
+        }
+
+        public Builder categoryRequirements(List<CategoryReq> categoryRequirements) {
+            this.categoryRequirements = categoryRequirements == null ? List.of() : categoryRequirements;
+            return this;
+        }
+
+        public Builder tagRequirements(List<TagReq> tagRequirements) {
+            this.tagRequirements = tagRequirements == null ? List.of() : tagRequirements;
+            return this;
+        }
+
+        public Builder xpRequirements(List<XpReq> xpRequirements) {
+            this.xpRequirements = xpRequirements == null ? List.of() : xpRequirements;
+            return this;
+        }
+
+        public Builder rewards(List<Reward> rewards) {
+            this.rewards = rewards == null ? new java.util.ArrayList<>() : rewards;
+            return this;
+        }
+
+        public StageDefinition build() {
+            return new StageDefinition(this);
+        }
     }
 
     /**
@@ -57,6 +101,8 @@ public class StageDefinition {
      * La catégorie sera résolue en un item concret via BiomeResourceResolver.
      */
     public record CategoryReq(String category, int count) {}
+
+    public record TagReq(String tagId, int count) {}
 
     /**
      * Récompense donnée à tous les joueurs connectés quand ce stade est validé.
