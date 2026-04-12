@@ -58,6 +58,7 @@ All commands start with `/bq` (alias available via any registered alias).
 |---|---|
 | `/bq` or `/bq status` | Show current stage, objective and progress |
 | `/bq submit` | Donate all eligible items from your inventory |
+| `/bq submitxp <amount>` | Donate experience points |
 | `/bq ladder` | Show the top 10 donors |
 
 ### Operator commands (permission level 2)
@@ -87,6 +88,9 @@ File location: `config/borderquest.json`
   // Duration of the celebration fireworks on stage completion (ticks, 20 = 1s)
   "celebrationDurationTicks": 200,
 
+  // Duration of the border expansion animation in seconds
+  "borderExpansionDurationSeconds": 15,
+
   // Damage per second while a player is outside the border
   "borderDamagePerBlock": 0.2,
 
@@ -95,6 +99,12 @@ File location: `config/borderquest.json`
 
   // Nether coordinate scale factor (Nether border = Overworld radius / netherScale)
   "netherScale": 8.0,
+
+  // Locale code for translation (supported: en_us, fr_fr, de_de)
+  "locale": "en_us",
+
+  // Is submit command disabled ?
+  "disableSubmitCommand": true,
 
   // Altar particles -----------------------------------------------------------
 
@@ -123,6 +133,19 @@ File location: `config/borderquest.json`
   "discordUsername": "Border Quest",
   "discordAvatarUrl": "",   // Leave empty to use the default webhook avatar
 
+  // Sidebar and Celebration Texts
+  "sidebarHeaderTitle": "★Border Quest★",
+  "sidebarHeaderCompleteTitle": "THE BORDER HAS FALLEN!",
+  "sidebarHeaderCompleteSubtitle": "Stage completed, border expanding!",
+  "sidebarHeaderStageTemplate": "Stage %s/%s",
+  "sidebarHeaderRadiusTemplate": "Current Border: %s blocks",
+  "sidebarHeaderCollectTitle": "Current Border Quest:",
+  "sidebarFooterTopDonors": "Top Quester:",
+  "celebrationTitleFinal": "★ FREEDOM ! ★",
+  "celebrationTitleProgress": "✦ BORDER EXPANDED ✦",
+  "celebrationSubtitleFinal": "The world is yours!",
+  "celebrationSubtitleProgress": "Border expanding to %s blocks | %s",
+
   // Stages --------------------------------------------------------------------
 
   "stages": [
@@ -137,6 +160,14 @@ File location: `config/borderquest.json`
       "categoryRequirements": [
         { "category": "logs", "count": 64 }
       ],
+      // Tag-resolved categories (For better third-party mod-support)
+      "tagRequirements": [{ "tagId": "minecraft:logs", "count": 64 }],
+      // Experience points
+      "xpRequirements": [
+        {
+          "count": 500
+        }
+      ],
       // Rewards distributed to ALL online players on completion
       "rewards": []
     },
@@ -148,6 +179,8 @@ File location: `config/borderquest.json`
         { "itemId": "minecraft:bread",      "count": 32 }
       ],
       "categoryRequirements": [],
+      "tagRequirements": [],
+      "xpRequirements": [],
       "rewards": [
         // Give 3 bread to every online player
         { "type": "item",   "itemId": "minecraft:bread", "count": 3 },
@@ -171,6 +204,8 @@ File location: `config/borderquest.json`
 | `title` | string | Displayed in chat and the tab-list sidebar |
 | `requirements` | list | Specific items required — `itemId` + `count` |
 | `categoryRequirements` | list | Biome-adaptive requirements — `category` + `count` |
+| `tagRequirements` | list | Specific minecraft tags required — `tagId` + `count` |
+| `xpRequirements` | list | Experience points required — `count` |
 | `rewards` | list | Rewards given to all online players on stage validation |
 
 **Built-in categories**: `logs`, `planks`, `wool`, `sand`, `stone` — resolved to the most common variants found in the spawn biome.
