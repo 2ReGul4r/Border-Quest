@@ -24,55 +24,60 @@ public class BorderQuestCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher,
                                 CommandRegistryAccess registryAccess,
                                 CommandManager.RegistrationEnvironment environment) {
-        dispatcher.register(
-            CommandManager.literal("bq")
-                // /bq  (sans sous-commande) → statut
-                .executes(BorderQuestCommand::status)
+        var root = CommandManager.literal("bq")
+            // /bq  (sans sous-commande) → statut
+            .executes(BorderQuestCommand::status)
 
-                // /bq status — affiche l'objectif actuel
-                .then(CommandManager.literal("status")
-                    .executes(BorderQuestCommand::status))
+            // /bq status — affiche l'objectif actuel
+            .then(CommandManager.literal("status")
+                .executes(BorderQuestCommand::status))
 
-                // /bq submit — soumet les items de l'inventaire
-                .then(CommandManager.literal("submit")
-                    .executes(BorderQuestCommand::submit))
+            // /bq submitxp <amount> — soumet de l'XP pour cet objectif
+            .then(CommandManager.literal("submitxp")
+                .then(CommandManager.argument("amount", IntegerArgumentType.integer(1))
+                    .executes(BorderQuestCommand::submitXp)))
 
-                // /bq submitxp <amount> — soumet de l'XP pour cet objectif
-                .then(CommandManager.literal("submitxp")
-                    .then(CommandManager.argument("amount", IntegerArgumentType.integer(1))
-                        .executes(BorderQuestCommand::submitXp)))
+            .then(CommandManager.literal("resetReq")
+                .then(CommandManager.argument("requirement", StringArgumentType.word())
+                    .executes(BorderQuestCommand::resetRequirement)))
 
-                // /bq reset — remet à zéro (op niveau 2)
-                .then(CommandManager.literal("reset")
-                    .requires(src -> src.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
-                    .executes(BorderQuestCommand::reset))
+            // /bq reset — remet à zéro (op niveau 2)
+            .then(CommandManager.literal("reset")
+                .requires(src -> src.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
+                .executes(BorderQuestCommand::reset))
 
-                // /bq skip — passe au stade suivant sans remplir l'objectif (op)
-                .then(CommandManager.literal("skip")
-                    .requires(src -> src.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
-                    .executes(BorderQuestCommand::skip))
+            // /bq skip — passe au stade suivant sans remplir l'objectif (op)
+            .then(CommandManager.literal("skip")
+                .requires(src -> src.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
+                .executes(BorderQuestCommand::skip))
 
-                // /bq reload — recharge l'état depuis le fichier (op)
-                .then(CommandManager.literal("reload")
-                    .requires(src -> src.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
-                    .executes(BorderQuestCommand::reload))
+            // /bq reload — recharge l'état depuis le fichier (op)
+            .then(CommandManager.literal("reload")
+                .requires(src -> src.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
+                .executes(BorderQuestCommand::reload))
 
-                // /bq setaltar [nom] — enregistre le bloc regardé comme autel (op)
-                .then(CommandManager.literal("setaltar")
-                    .requires(src -> src.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
-                    .executes(BorderQuestCommand::setAltar)
-                    .then(CommandManager.argument("name", StringArgumentType.greedyString())
-                        .executes(ctx -> setAltarNamed(ctx, StringArgumentType.getString(ctx, "name")))))
+            // /bq setaltar [nom] — enregistre le bloc regardé comme autel (op)
+            .then(CommandManager.literal("setaltar")
+                .requires(src -> src.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
+                .executes(BorderQuestCommand::setAltar)
+                .then(CommandManager.argument("name", StringArgumentType.greedyString())
+                    .executes(ctx -> setAltarNamed(ctx, StringArgumentType.getString(ctx, "name")))))
 
-                // /bq removealtar — retire le bloc regardé des autels (op)
-                .then(CommandManager.literal("removealtar")
-                    .requires(src -> src.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
-                    .executes(BorderQuestCommand::removeAltar))
+            // /bq removealtar — retire le bloc regardé des autels (op)
+            .then(CommandManager.literal("removealtar")
+                .requires(src -> src.getPermissions().hasPermission(DefaultPermissions.GAMEMASTERS))
+                .executes(BorderQuestCommand::removeAltar))
 
-                // /bq ladder — classement des donateurs (accessible à tous)
-                .then(CommandManager.literal("ladder")
-                    .executes(BorderQuestCommand::ladder))
-        );
+            // /bq ladder — classement des donateurs (accessible à tous)
+            .then(CommandManager.literal("ladder")
+                .executes(BorderQuestCommand::ladder));
+
+        if (!BorderQuestConfig.get().disableSubmitCommand) {
+            root = root.then(CommandManager.literal("submit")
+                .executes(BorderQuestCommand::submit));
+        }
+
+        dispatcher.register(root);
     }
 
     // -----------------------------------------------------------------------
@@ -115,6 +120,22 @@ public class BorderQuestCommand {
 
         int amount = IntegerArgumentType.getInteger(ctx, "amount");
         ctx.getSource().sendMessage(mgr.submitXp(player, amount));
+        return 1;
+    }
+
+    private static int resetRequirement(CommandContext<ServerCommandSource> ctx) {
+        BorderQuestManager mgr = BorderQuest.manager;
+        if (mgr == null) { ctx.getSource().sendMessage(noManager()); return 0; }
+
+        var player = ctx.getSource().getPlayer();
+        if (player == null) {
+            ctx.getSource().sendMessage(
+                Text.literal(Localization.translate("borderquest.msg.mustExecAsPlayer")).formatted(Formatting.RED));
+            return 0;
+        }
+
+        String requirement = StringArgumentType.getString(ctx, "requirement");
+        ctx.getSource().sendMessage(mgr.resetRequirement(player, requirement));
         return 1;
     }
 

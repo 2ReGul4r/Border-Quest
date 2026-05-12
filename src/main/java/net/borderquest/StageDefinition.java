@@ -94,7 +94,11 @@ public class StageDefinition {
     /**
      * Paire item ID -> quantité requise.
      */
-    public record ItemReq(String itemId, int count) {}
+    public record ItemReq(String itemId, int count, boolean rare) {
+        public ItemReq(String itemId, int count) {
+            this(itemId, count, false);
+        }
+    }
 
     /**
      * Catégorie de ressource -> quantité requise.

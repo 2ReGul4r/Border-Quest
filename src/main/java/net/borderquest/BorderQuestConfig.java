@@ -29,6 +29,8 @@ public class BorderQuestConfig {
     // Paramètres généraux
     // -----------------------------------------------------------------------
 
+    public boolean safeSpawn = false;
+
     /** Durée des feux d'artifice de célébration en ticks (20 ticks = 1 seconde). */
     public int celebrationDurationTicks = 200;
 
@@ -52,6 +54,8 @@ public class BorderQuestConfig {
     // -----------------------------------------------------------------------
     // Particules autels
     // -----------------------------------------------------------------------
+
+    public boolean disableSubmitCommand = false;
 
     /** Active les particules autour des blocs d'autel. */
     public boolean altarParticlesEnabled = true;

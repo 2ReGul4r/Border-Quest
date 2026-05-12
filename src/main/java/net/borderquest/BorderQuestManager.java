@@ -3,6 +3,8 @@ package net.borderquest;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
+import net.borderquest.StageDefinition.CategoryReq;
+import net.borderquest.StageDefinition.ItemReq;
 import net.borderquest.map.MapIntegrationManager;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FireworkExplosionComponent;
@@ -276,9 +278,9 @@ public class BorderQuestManager {
             if (parts.length != 3) continue;
             try {
                 double x = Double.parseDouble(parts[0]) + 0.5;
-                double y = Double.parseDouble(parts[1]) + 1.2;
+                double y = Double.parseDouble(parts[1]) + 0.5;
                 double z = Double.parseDouble(parts[2]) + 0.5;
-                world.spawnParticles(ParticleTypes.END_ROD, x, y, z, 3, 0.3, 0.3, 0.3, 0.04);
+                world.spawnParticles(ParticleTypes.WAX_ON, x, y, z, 8, 0.5, 0.5, 0.5, 0.1);
             } catch (NumberFormatException ignored) {}
         }
     }
@@ -392,6 +394,7 @@ public class BorderQuestManager {
         }
 
         boolean submittedAnything = false;
+        boolean rareItemSubmitted = false;
         StringBuilder log = new StringBuilder();
         String playerUuid = player.getUuidAsString();
         String playerName = player.getName().getString();
@@ -411,6 +414,9 @@ public class BorderQuestManager {
             int newTotal = Math.min(state.submittedItems.get(req.itemId()), req.count());
             log.append(String.format("  +%d %s (%d/%d)\n", toTake,
                 req.itemId().replace("minecraft:", ""), newTotal, req.count()));
+            if (req.rare()) {
+                rareItemSubmitted = true;
+            }
         }
 
         for (StageDefinition.TagReq tagReq : resolvedTagRequirements) {
@@ -439,11 +445,12 @@ public class BorderQuestManager {
         state.playerDonations.merge(playerUuid, totalDonated, Integer::sum);
         state.playerNames.put(playerUuid, playerName);
 
-        // Annonce publique si le don dépasse le seuil configuré
         BorderQuestConfig cfgAnnounce = BorderQuestConfig.get();
-        if (cfgAnnounce.donationAnnouncementsEnabled && totalDonated >= cfgAnnounce.donationAnnounceMinItems) {
+        if (cfgAnnounce.donationAnnouncementsEnabled && 
+            (rareItemSubmitted || totalDonated >= cfgAnnounce.donationAnnounceMinItems)) {
+            Formatting color = rareItemSubmitted ? Formatting.RED : Formatting.WHITE;
             server.getPlayerManager().broadcast(
-                Text.literal(Localization.translate("borderquest.msg.publicDonation", playerName, totalDonated)),
+                Text.literal(Localization.translate("borderquest.msg.publicDonation", playerName, totalDonated)).formatted(color),
                 false
             );
         }
@@ -460,26 +467,64 @@ public class BorderQuestManager {
             + log.toString().trim()).formatted(Formatting.GREEN);
     }
 
-    public Text submitXp(ServerPlayerEntity player, int amount) {
+    public Text resetRequirement(ServerPlayerEntity player, String requirement) {
         if (isLastStage())
             return Text.literal(Localization.translate("borderquest.msg.barrierAlreadyRaised")).formatted(Formatting.GOLD);
 
-        int totalXpRequired = resolvedXpRequirements.stream().mapToInt(StageDefinition.XpReq::count).sum();
-        if (totalXpRequired <= 0)
-            return Text.literal(Localization.translate("borderquest.msg.noXpRequired")).formatted(Formatting.YELLOW);
+        boolean found = false;
+        if (requirement.isBlank()) {
+            return Text.literal(Localization.translate("borderquest.msg.specifyRequirement")).formatted(Formatting.YELLOW);
+        }
+        if (requirement.toLowerCase().equals("all") || requirement.equals("*")) {
+            // Reset global
+            state.submittedItems.clear();
+            state.submittedTagItems.clear();
+            state.submittedXp = 0;
+            found = true;
+        } else if (requirement.startsWith("#")) {
+            // Reset tag
+            String tagId = requirement.substring(1);
+            state.submittedTagItems.remove(tagId);
+            found = true;
+        } else if (requirement.toLowerCase().equals("xp")) {
+            // Reset XP requirement
+            state.submittedXp = 0;
+            found = true;
+        } else {
+            // Reset item
+            for (ItemReq req : resolvedRequirements) {
+                if (req.itemId().toLowerCase().contains(requirement.toLowerCase())) {
+                    state.submittedItems.remove(req.itemId());
+                    found = true;
+                    break;
+                }
+            }
+        }
+
+        if (!found)
+            return Text.literal(Localization.translate("borderquest.msg.requirementNotFound", requirement)).formatted(Formatting.RED);
+
+        save();
+        updateSidebar();
+        return Text.literal(Localization.translate("borderquest.msg.requirementReset", requirement)).formatted(Formatting.YELLOW);
+    }
+
+    public Text submitXp(ServerPlayerEntity player, int amount) {
+        int currentPlayerXp = player.totalExperience;
+        int totalStageXpRequired = resolvedXpRequirements.stream().mapToInt(StageDefinition.XpReq::count).sum();
+        int remainingStageXp = totalStageXpRequired - state.submittedXp;
+
+        int toDonate = Math.min(Math.min(amount, currentPlayerXp), remainingStageXp);
+
+        if (isLastStage())
+            return Text.literal(Localization.translate("borderquest.msg.barrierAlreadyRaised")).formatted(Formatting.GOLD);
 
         if (amount <= 0)
             return Text.literal(Localization.translate("borderquest.msg.invalidXpAmount")).formatted(Formatting.RED);
 
-        int currentXp = player.totalExperience;
-        if (currentXp <= 0)
-            return Text.literal(Localization.translate("borderquest.msg.notEnoughXp")).formatted(Formatting.RED);
-
-        int remaining = totalXpRequired - state.submittedXp;
-        if (remaining <= 0)
+        if (remainingStageXp <= 0)
             return Text.literal(Localization.translate("borderquest.msg.xpObjectiveAlreadyMet")).formatted(Formatting.GREEN);
 
-        int toDonate = Math.min(amount, Math.min(remaining, currentXp));
         player.addExperience(-toDonate);
         state.submittedXp += toDonate;
 
@@ -493,7 +538,7 @@ public class BorderQuestManager {
             advanceStage();
             return Text.literal(Localization.translate("borderquest.msg.stageCompletedWithXp", toDonate)).formatted(Formatting.GREEN);
         }
-        return Text.literal(Localization.translate("borderquest.msg.xpSubmitted", toDonate, state.submittedXp, totalXpRequired)).formatted(Formatting.GREEN);
+        return Text.literal(Localization.translate("borderquest.msg.xpSubmitted", toDonate, state.submittedXp, totalStageXpRequired)).formatted(Formatting.GREEN);
     }
 
     private void advanceStage() {
@@ -703,6 +748,11 @@ public class BorderQuestManager {
 
         String itemId = Registries.ITEM.getId(held.getItem()).toString();
 
+        if (held.hasEnchantments()) {
+            return Text.literal(Localization.translate("borderquest.msg.enchantedItemsNotAccepted"))
+                .formatted(Formatting.RED);
+        }
+
         // Chercher si cet item est requis ou correspond à une TagRequirement
         ItemReq matching = null;
         for (ItemReq req : resolvedRequirements) {
@@ -802,11 +852,15 @@ public class BorderQuestManager {
     // Utilitaires inventaire
     // -----------------------------------------------------------------------
 
+    private boolean isDonationEligible(ItemStack stack) {
+        return !stack.isEmpty() && !stack.hasEnchantments();
+    }
+
     private int countInInventory(ServerPlayerEntity player, Item item) {
         int count = 0;
         for (int i = 0; i < player.getInventory().size(); i++) {
             ItemStack stack = player.getInventory().getStack(i);
-            if (stack.getItem() == item) count += stack.getCount();
+            if (stack.getItem() == item && isDonationEligible(stack)) count += stack.getCount();
         }
         return count;
     }
@@ -815,7 +869,7 @@ public class BorderQuestManager {
         int toRemove = amount;
         for (int i = 0; i < player.getInventory().size() && toRemove > 0; i++) {
             ItemStack stack = player.getInventory().getStack(i);
-            if (stack.getItem() == item) {
+            if (stack.getItem() == item && isDonationEligible(stack)) {
                 int take = Math.min(stack.getCount(), toRemove);
                 stack.decrement(take);
                 toRemove -= take;
@@ -846,7 +900,7 @@ public class BorderQuestManager {
         int count = 0;
         for (int i = 0; i < player.getInventory().size(); i++) {
             ItemStack stack = player.getInventory().getStack(i);
-            if (!stack.isEmpty() && stack.isIn(tag)) count += stack.getCount();
+            if (!stack.isEmpty() && stack.isIn(tag) && isDonationEligible(stack)) count += stack.getCount();
         }
         return count;
     }
@@ -856,7 +910,7 @@ public class BorderQuestManager {
         int toRemove = amount;
         for (int i = 0; i < player.getInventory().size() && toRemove > 0; i++) {
             ItemStack stack = player.getInventory().getStack(i);
-            if (stack.isEmpty() || !stack.isIn(tag)) continue;
+            if (stack.isEmpty() || !stack.isIn(tag) || !isDonationEligible(stack)) continue;
             int take = Math.min(stack.getCount(), toRemove);
             stack.decrement(take);
             String itemId = Registries.ITEM.getId(stack.getItem()).toString();

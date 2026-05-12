@@ -63,7 +63,9 @@ public class BorderQuest implements ModInitializer {
             ServerWorld world = server.getOverworld();
 
             // Téléporter vers une position sûre si le joueur est sous-terre ou dans l'eau
-            safeSpawnTeleport(player, world, manager);
+            if (BorderQuestConfig.get().safeSpawn) {
+                safeSpawnTeleport(player, world, manager);
+            }
 
             Text prefix = Text.literal(Localization.translate("borderquest.prefix"))
                 .formatted(Formatting.GREEN);

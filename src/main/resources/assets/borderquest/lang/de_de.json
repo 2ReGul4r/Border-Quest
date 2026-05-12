@@ -75,8 +75,13 @@
   "borderquest.msg.statusSubmitHint": "/bq submit zum Einzahlen.",
   "borderquest.msg.mustHoldRequiredItem": "[BorderQuest] Halte ein benötigtes Item in der Hand.",
   "borderquest.msg.itemNotRequiredHere": "[BorderQuest] Dieses Item wird hier nicht benötigt.",
+  "borderquest.msg.enchantedItemsNotAccepted": "[BorderQuest] Verzauberte Gegenstände können nicht gespendet werden. Verwende ein nicht verzaubertes Item.",
   "borderquest.msg.itemAlreadyComplete": "[BorderQuest] Bereits abgeschlossen für %s!",
   "borderquest.msg.publicAltarDepositAnnouncement": "[BorderQuest] %s deposited %d %s on the altar!",
   "borderquest.msg.altarDonationComplete": "[BorderQuest] Ziel erreicht! +%d %s (%d/%d)",
-  "borderquest.msg.altarDonationProgress": "[BorderQuest] +%d %s | %d/%d"
+  "borderquest.msg.altarDonationProgress": "[BorderQuest] +%d %s | %d/%d",
+  "borderquest.msg.requirementNotFound": "[BorderQuest] Anforderung nicht gefunden: %s",
+  "borderquest.msg.requirementReset": "[BorderQuest] Anforderung zurückgesetzt: %s",
+  "borderquest.msg.requirementResetAll": "[BorderQuest] Alle Anforderungen zurückgesetzt.",
+  "borderquest.msg.specifyRequirement": "[BorderQuest] Bitte gib eine Anforderung an. Verfügbare Anforderungen: %s"
 }
